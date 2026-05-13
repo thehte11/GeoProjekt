@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <script data-cfasync="false" type="text/javascript" src="https://cache.consentframework.com/js/pa/51632/c/hz9Ky/stub?source=google-tag"></script>
+<script data-cfasync="false" type="text/javascript" src="https://choices.consentframework.com/js/pa/51632/c/hz9Ky/cmp?source=google-tag" async></script>
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-VYQCXM2XRR"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-VYQCXM2XRR');
+</script>
+    <!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-T6TKH6F9');</script>
+<!-- End Google Tag Manager -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPU-Weltkarte</title>
+
+    <!-- CookieYes -->
+    <script id="cookieyes" type="text/javascript" src="https://cdn-cookieyes.com/client_data/d95b9c572a618c7cf3c880cf/script.js"></script>
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-VYQCXM2XRR"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-VYQCXM2XRR');
+    </script>
+    
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-T6TKH6F9');</script>
+    <!-- End Google Tag Manager -->
+
+    <!-- D3.js für Karte und Zoom-Funktionen laden -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f6;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Der linke Bereich für die Karte */
+        #map-container {
+            flex: 2;
+            background-color: #aadaff; /* Ozean-Farbe */
+            position: relative;
+            cursor: grab;
+        }
+
+        #map-container:active {
+            cursor: grabbing;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Ladebildschirm */
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            color: #2c3e50;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Aussehen der Länder */
+        .country {
+            fill: #ecf0f1; 
+            stroke: #bdc3c7;
+            stroke-width: 0.5px;
+            transition: fill 0.2s ease, stroke-width 0.2s ease;
+            cursor: pointer; /* NEU: Jedes Land zeigt nun den Hand-Cursor beim Drüberfahren */
+        }
+
+        /* Länder mit CPU-Daten */
+        .country.has-data {
+            fill: #3498db; /* Blaues Hervorheben */
+        }
+
+        /* HOVER: Roter Fill und dicker weißer Umriss (nur für Länder mit Daten behalten, oder anpassen wie du magst) */
+        .country.has-data:hover {
+            fill: #e74c3c !important; 
+            stroke: #ffffff;
+            stroke-width: 2.5px;
+        }
+        
+        /* HOVER für Länder OHNE Daten */
+        .country:not(.has-data):hover {
+            fill: #d5dbdb !important; /* Leichtes abdunkeln beim drüberfahren */
+            stroke: #ffffff;
+            stroke-width: 1.5px;
+        }
+
+        /* Der rechte Informationsbereich */
+        #info-panel {
+            flex: 1;
+            background-color: #ffffff;
+            padding: 30px;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            min-width: 350px;
+            z-index: 10;
+        }
+
+        h1 { font-size: 1.6em; color: #2c3e50; margin-top: 0; margin-bottom: 20px; }
+        .info-section { display: none; margin-top: 25px; }
+        .info-section h3 { color: #2980b9; border-bottom: 2px solid #eee; padding-bottom: 5px; font-size: 1.1em; margin-top: 20px;}
+        .info-section p { line-height: 1.5; color: #34495e; margin-top: 5px; }
+        #default-message { color: #7f8c8d; font-style: italic; margin-top: 20px; background: #fdf2f0; padding: 15px; border-radius: 5px;}
+
+        /* Kleines Pop-up am Mauszeiger */
+        #tooltip {
+            position: absolute;
+            background: rgba(44, 62, 80, 0.9);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            pointer-events: none;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            font-weight: bold;
+            z-index: 20;
+        }
+
+        /* --- NEU: Responsive Anpassung für mobile Geräte --- */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+            #map-container {
+                flex: 1;
+                min-height: 50vh;
+            }
+            #info-panel {
+                flex: 1;
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="map-container">
+        <div id="loading">Lade Weltkarte...</div>
+        <div id="tooltip"></div>
+    </div>
+
+    <div id="info-panel">
+        <h1>Die globale CPU-Lieferkette</h1>
+        
+        <div id="default-message">
+            Klicke auf ein beliebiges Land.
+        </div>
+
+        <div id="country-details" class="info-section">
+            <h2 id="country-name" style="color: #e74c3c; margin-bottom: 5px;">Land</h2>
+            
+            <h3>Abbau (Herkunft)</h3>
+            <p id="mining-data">-</p>
+            
+            <h3>Verarbeitung (Veredelung/Montage)</h3>
+            <p id="processing-data">-</p>
+
+            <h3>Verwendung in der CPU</h3>
+            <p id="usage-data">-</p>
+        </div>
+    </div>
+
+    <script>
+        // Die aktualisierten CPU Daten
+        const cpuData = {
+            "China": { 
+                name: "China", 
+                abbau: "Quarzsand (Silizium & Glasfaser), Phosphaterze, Wolfram (>80%), Gold, Zinn, Silber, Indium", 
+                verarbeitung: "Reinstsilizium, Wolfram-Veredelung, Kupferraffination, Tantal, Gold- & Nickel-Raffination, Lotlegierungen, Massenfertigung Kupfer-Heatspreader, Indium-Plättchen",
+                verwendung: "Silizium bildet den Chip (Die). Phosphor dotiert Transistoren. Wolfram bildet interne Kontakte. Gold für Kontaktflächen. Zinn/Silber/Indium für Lötverbindungen und Wärmeübertragung (TIM). Kupfer für den Kühlkörper. Nickel als Unterbeschichtung."
+            },
+            "USA": { 
+                name: "USA", 
+                abbau: "Quarzsand (Silizium & Glasfaser), Bor, Kupfer, Erdöl/Erdgas, Gold", 
+                verarbeitung: "Reinstsilizium, Wafer-Fertigung/Chip-Belichtung (Intel), Gase (Bor/Phosphor), Tantal-Veredelung, Indium-Aufbereitung",
+                verwendung: "Silizium für den Hauptchip. Bor/Phosphor zur elektrischen Steuerung der Transistoren. Kupfer/Tantal für Chip-Verdrahtung. Erdöl/Erdgas wird zu Kunstharz für die Trägerplatte (Substrat). Glasfaser stabilisiert das Package."
+            },
+            "Germany": { 
+                name: "Deutschland", 
+                abbau: "Keine wesentlichen primären Abbaugebiete für CPU-Metalle.", 
+                verarbeitung: "Reinstsilizium (z. B. Wacker Chemie), Hafnium-Aufbereitung, Wolfram/Kobalt (Pulver/Targets), Kupferraffination, Tantal-Veredelung",
+                verwendung: "Reinstsilizium ist das Grundmaterial der Wafer. Hafnium isoliert Transistor-Gates. Wolfram/Kobalt dienen als mikroskopische Stecker (Plugs) im Chip. Kupfer/Tantal bilden die Leiterbahnen auf dem Die."
+            },
+            "Taiwan": { 
+                name: "Taiwan", 
+                abbau: "Keine wesentlichen primären Abbaugebiete.", 
+                verarbeitung: "Wafer-Fertigung/Chip-Belichtung (TSMC), Substrate/Trägerplatinen (z. B. Unimicron), Lotlegierungen, Kupfer-Heatspreader",
+                verwendung: "Hier entsteht in der Wafer-Fertigung das 'Gehirn' (der Die). Komplexe mehrlagige Substrate bilden die grüne Trägerplatte. Lotlegierungen verbinden Die und Substrat physisch und elektrisch."
+            },
+            "South Korea": { 
+                name: "Südkorea", 
+                abbau: "Indium (Nebenprodukt)", 
+                verarbeitung: "Wafer-Fertigung/Chip-Belichtung (Samsung), Substrate/Trägerplatinen, Indium-Lot-Plättchen",
+                verwendung: "Fertigung des Prozessor-Chips (Die) und der zugehörigen Trägerplatinen. Indium-Lot wird als Thermal Interface Material (TIM) extrem wärmeleitend zwischen Chip und Kupferdeckel eingesetzt."
+            },
+            "Japan": { 
+                name: "Japan", 
+                abbau: "Indium (Nebenprodukt)", 
+                verarbeitung: "Hochreine Gase, Hafnium-Aufbereitung, Substrate/Trägerplatinen (z. B. Ibiden), Nickel-Spezialveredelung, Lotlegierungen",
+                verwendung: "Gase (Bor/Phosphor) machen Transistoren leitfähig. Hafnium isoliert. Hier werden zudem essenzielle mehrlagige Trägerplatinen (Substrate) hergestellt. Nickel und Lot dienen den elektrischen Kontakten."
+            },
+            "Saudi Arabia": {
+                name: "Saudi-Arabien (Naher Osten)",
+                abbau: "Erdöl und Erdgas",
+                verarbeitung: "-",
+                verwendung: "Erdöl und Erdgas aus dem Nahen Osten bilden die chemische Basis für Epoxidharze. Diese Kunstharze sind das unverzichtbare Trägermaterial für die komplexe, mehrlagige grüne Trägerplatine (Package/Substrat) der CPU."
+            },
+            "Democratic Republic of the Congo": { 
+                name: "DR Kongo", 
+                abbau: "Kobalt (>70%), Tantal (Coltan)", 
+                verarbeitung: "Wird meist roh exportiert.",
+                verwendung: "Kobalt wird für interne, mikroskopische Kontakte (Plugs) auf dem Silizium-Chip verwendet. Tantal ist essenziell für die extrem feine Leiterbahn-Verdrahtung direkt auf dem Chip."
+            },
+            "Chile": { 
+                name: "Chile", 
+                abbau: "Kupfer", 
+                verarbeitung: "Kupferkonzentrate",
+                verwendung: "Kupfer bildet die winzigen Leiterbahnen direkt auf dem Silizium-Chip und wird massiv für den dicken, wärmeableitenden Deckel (Heatspreader) der CPU verwendet."
+            },
+            "Peru": { 
+                name: "Peru", 
+                abbau: "Kupfer, Zinn, Silber", 
+                verarbeitung: "-",
+                verwendung: "Kupfer für Verdrahtung und Kühlkörper. Zinn und Silber sind die Hauptbestandteile von Lotlegierungen, die für BGA-Verbindungen (Lotkugeln an der Unterseite der CPU) genutzt werden."
+            },
+            "Australia": { 
+                name: "Australien", 
+                abbau: "Hafnium, Gold", 
+                verarbeitung: "Gold-Raffination",
+                verwendung: "Hafnium isoliert als High-k-Dielektrikum moderne Transistoren (verhindert Kriechstrom). Gold wird für stark leitende Kontaktflächen und Draht-Bonding auf der Platine genutzt."
+            },
+            "South Africa": { 
+                name: "Südafrika", 
+                abbau: "Hafnium", 
+                verarbeitung: "Gold-Raffination",
+                verwendung: "Hafnium dient der elektrischen Isolierung winziger Transistor-Gates. Gold wird in der Veredelung für die Kontaktflächen auf dem CPU-Substrat verwendet."
+            },
+            "Indonesia": { 
+                name: "Indonesien", 
+                abbau: "Nickel (weltweit größter Förderer), Zinn", 
+                verarbeitung: "Massive Verarbeitungskapazitäten für Nickel",
+                verwendung: "Nickel dient als Unterbeschichtung für Goldkontakte und wird als Korrosionsschutz galvanisch über den Kupfer-Heatspreader (Deckel) gezogen. Zinn bildet Basis-Lotkugeln."
+            },
+            "Russia": { 
+                name: "Russland", 
+                abbau: "Quarzsand (Silizium), Erdgas/Erdöl, Gold, Nickel", 
+                verarbeitung: "-",
+                verwendung: "Silizium ist Grundmaterial für Wafer. Erdgas/Erdöl ist die chemische Basis für die Epoxidharz-Trägerplatte. Gold und Nickel sichern langlebige und extrem leitfähige Kontakte."
+            },
+            "Brazil": { 
+                name: "Brasilien", 
+                abbau: "Quarzsand (Silizium), Tantal", 
+                verarbeitung: "-",
+                verwendung: "Silizium als Grundmaterial des Mikrochips. Tantal wird für die extrem feine, lokale Verdrahtung direkt im Silizium-Die verwendet, da es thermisch hochstabil ist."
+            },
+            "Turkey": { 
+                name: "Türkei", 
+                abbau: "Bor (>70%)", 
+                verarbeitung: "-",
+                verwendung: "Bor wird als Gas bei der Chip-Herstellung in das Silizium 'eingeschossen' (Dotierung). Erst dadurch werden die Transistoren gesteuert leitfähig."
+            },
+            "Morocco": { 
+                name: "Marokko", 
+                abbau: "Phosphaterze", 
+                verarbeitung: "-",
+                verwendung: "Phosphor wird zur Dotierung des Silizium-Wafers genutzt, um die elektrischen Eigenschaften der Transistoren für die P-N-Übergänge gezielt zu verändern."
+            },
+            "Switzerland": { 
+                name: "Schweiz", 
+                abbau: "-", 
+                verarbeitung: "Weltweite Hochraffination von Gold",
+                verwendung: "Hochreines Gold wird für die winzigen Kontaktflächen auf dem Substrat und für das Draht-Bonding genutzt, da es als Edelmetall nicht oxidiert."
+            },
+            "Malaysia": { 
+                name: "Malaysia", 
+                abbau: "-", 
+                verarbeitung: "Lotlegierungen, Endmontage (CPU-Zusammensetzung & Nickel-Überzug)",
+                verwendung: "Lotlegierungen verbinden den Silizium-Chip mit der Trägerplatte. In der Endmontage wird der Kupferdeckel zum Schutz vor Oxidation mit Nickel überzogen und auf das Package verklebt."
+            },
+            "Vietnam": { 
+                name: "Vietnam", 
+                abbau: "-", 
+                verarbeitung: "Endmontage (CPU-Zusammensetzung & Nickel-Überzug)",
+                verwendung: "Hauptsächlich Packaging und Endmontage: Der fertige Chip wird auf das Substrat gelötet, und der schützende Kupfer-Heatspreader wird galvanisch vernickelt und aufgesetzt."
+            },
+            "France": { 
+                name: "Frankreich", 
+                abbau: "-", 
+                verarbeitung: "Chemische Aufbereitung von Hafnium",
+                verwendung: "Hafnium dient als unverzichtbares Isoliermaterial für die winzigen Transistor-Gates, um das unerwünschte Abfließen von Strom zu verhindern."
+            },
+            "Finland": { 
+                name: "Finnland", 
+                abbau: "-", 
+                verarbeitung: "Wolfram/Kobalt-Veredelung zu Reinstpulver",
+                verwendung: "Wolfram und Kobalt werden für die mikroskopisch kleinen, internen Stecker (Plugs) verwendet, die Milliarden Transistoren auf dem Chip verbinden."
+            },
+            "Canada": { 
+                name: "Kanada", 
+                abbau: "Gold", 
+                verarbeitung: "Wolfram/Kobalt-Veredelung",
+                verwendung: "Gold für oxidationsfreie Kontaktflächen am CPU-Sockel. Wolfram und Kobalt werden für die interne Verdrahtung und Kontaktstecker (Plugs) auf Transistorebene genutzt."
+            },
+            "Rwanda": { 
+                name: "Ruanda", 
+                abbau: "Tantal", 
+                verarbeitung: "-",
+                verwendung: "Tantal ist essenziell für die extrem feine, lokale Verdrahtung (Interconnects) und dient als Diffusionsbarriere direkt auf dem Silizium-Chip."
+            },
+            "Ghana": { 
+                name: "Ghana", 
+                abbau: "Gold", 
+                verarbeitung: "-",
+                verwendung: "Gold wird in der finalen CPU für die Kontaktflächen (Pins/Pads) an der Unterseite genutzt, da es den perfekten Mix aus Leitfähigkeit und Korrosionsbeständigkeit bietet."
+            },
+            "Philippines": { 
+                name: "Philippinen", 
+                abbau: "Nickel", 
+                verarbeitung: "-",
+                verwendung: "Nickel wird als silberglänzender Überzug auf den Kupferdeckel aufgetragen, um Korrosion zu verhindern, und dient als Barriere unter Goldkontakten."
+            },
+            "Mexico": { 
+                name: "Mexiko", 
+                abbau: "Silber", 
+                verarbeitung: "-",
+                verwendung: "Silber ist neben Zinn ein Hauptbestandteil moderner Lotlegierungen. Diese bilden die BGA-Kügelchen, die die CPU elektrisch mit dem Mainboard verbinden."
+            },
+            "Myanmar": { 
+                name: "Myanmar", 
+                abbau: "Zinn", 
+                verarbeitung: "-",
+                verwendung: "Zinn ist die Basis aller Lötverbindungen. Es wird benötigt, um den Chip auf die Trägerplatte zu löten, sowie zur späteren Mainboard-Verbindung."
+            }
+        };
+
+        // D3 Setup & Map Engine
+        const width = document.getElementById('map-container').clientWidth;
+        const height = document.getElementById('map-container').clientHeight;
+
+        const svg = d3.select("#map-container")
+            .append("svg")
+            .attr("viewBox", `0 0 ${width} ${height}`)
+            .attr("preserveAspectRatio", "xMidYMid meet");
+
+        const g = svg.append("g");
+
+        const projection = d3.geoMercator()
+            .scale(width / 6)
+            .translate([width / 2, height / 1.5]);
+
+        const path = d3.geoPath().projection(projection);
+        const tooltip = d3.select("#tooltip");
+
+        const zoom = d3.zoom()
+            .scaleExtent([1, 8])
+            .translateExtent([[-width * 0.03, -height * 0.005], [width * 1.03, height * 1.15]]) 
+            .on("zoom", (event) => {
+                g.attr("transform", event.transform);
+            });
+
+        svg.call(zoom);
+
+        // Echte Weltkarte ONLINE abrufen
+        d3.json("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson").then(function(data) {
+            
+            document.getElementById("loading").style.display = "none";
+
+            g.selectAll("path")
+                .data(data.features)
+                .enter()
+                .append("path")
+                .attr("d", path)
+                .attr("class", function(d) {
+                    return cpuData[d.properties.name] ? "country has-data" : "country";
+                })
+                .on("mouseover", function(event, d) {
+                    // NEU: Tooltip wird für jedes Land angezeigt
+                    const countryName = d.properties.name;
+                    const displayName = cpuData[countryName] ? cpuData[countryName].name : countryName;
+                    
+                    tooltip.style("opacity", 1)
+                           .html(displayName);
+                    d3.select(this).raise(); 
+                })
+                .on("mousemove", function(event) {
+                    tooltip.style("left", (event.pageX + 15) + "px")
+                           .style("top", (event.pageY - 20) + "px");
+                })
+                .on("mouseout", function() {
+                    tooltip.style("opacity", 0);
+                })
+                .on("click", function(event, d) {
+                    // NEU: Klick-Event für ALLE Länder
+                    const countryName = d.properties.name;
+                    
+                    document.getElementById("default-message").style.display = "none";
+                    document.getElementById("country-details").style.display = "block";
+                    
+                    if(cpuData[countryName]) {
+                        // Land hat spezifische Daten
+                        const info = cpuData[countryName];
+                        document.getElementById("country-name").innerText = info.name;
+                        document.getElementById("mining-data").innerText = info.abbau;
+                        document.getElementById("processing-data").innerText = info.verarbeitung;
+                        document.getElementById("usage-data").innerText = info.verwendung;
+                    } else {
+                        // Land hat keine spezifischen Daten -> Standardtext
+                        document.getElementById("country-name").innerText = countryName;
+                        document.getElementById("mining-data").innerText = "Keine Daten zum Abbau für die CPU-Produktion.";
+                        document.getElementById("processing-data").innerText = "Keine Daten zur Verarbeitung.";
+                        document.getElementById("usage-data").innerText = "Keine Verbindungen zur CPU-Lieferkette.";
+                    }
+                });
+        }).catch(function(error) {
+            document.getElementById("loading").innerText = "❌ Fehler: Keine Internetverbindung oder Datenquelle nicht erreichbar.";
+            document.getElementById("loading").style.color = "red";
+        });
+
+        window.addEventListener('resize', () => {
+            const newWidth = document.getElementById('map-container').clientWidth;
+            const newHeight = document.getElementById('map-container').clientHeight;
+            svg.attr("viewBox", `0 0 ${newWidth} ${newHeight}`);
+            
+            zoom.translateExtent([[-newWidth * 0.03, -newHeight * 0.005], [newWidth * 1.03, newHeight * 1.15]]);
+        });
+    </script>
+    
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T6TKH6F9"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+</body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T6TKH6F9"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+</html>
