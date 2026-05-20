@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<!-- Google tag (gtag.js) -->
+    <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-VYQCXM2XRR"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -10,7 +10,7 @@
 
   gtag('config', 'G-VYQCXM2XRR');
 </script>
-<!-- Google Tag Manager -->
+    <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
 j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
@@ -102,6 +102,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             border-radius: 8px;
             font-weight: bold;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
         }
 
         /* Aussehen der Länder */
@@ -110,7 +111,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             stroke: #bdc3c7;
             stroke-width: 0.5px;
             transition: fill 0.2s ease, stroke-width 0.2s ease;
-            cursor: pointer; /* NEU: Jedes Land zeigt nun den Hand-Cursor beim Drüberfahren */
+            cursor: pointer;
         }
 
         /* Länder mit CPU-Daten */
@@ -118,7 +119,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             fill: #3498db; /* Blaues Hervorheben */
         }
 
-        /* HOVER: Roter Fill und dicker weißer Umriss (nur für Länder mit Daten behalten, oder anpassen wie du magst) */
+        /* HOVER: Roter Fill und dicker weißer Umriss */
         .country.has-data:hover {
             fill: #e74c3c !important; 
             stroke: #ffffff;
@@ -127,7 +128,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         
         /* HOVER für Länder OHNE Daten */
         .country:not(.has-data):hover {
-            fill: #d5dbdb !important; /* Leichtes abdunkeln beim drüberfahren */
+            fill: #d5dbdb !important; 
             stroke: #ffffff;
             stroke-width: 1.5px;
         }
@@ -140,6 +141,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             box-shadow: -5px 0 15px rgba(0,0,0,0.1);
             overflow-y: auto;
             min-width: 350px;
+            box-sizing: border-box; /* Verhindert, dass das Padding die Breite sprengt */
             z-index: 10;
         }
 
@@ -171,11 +173,21 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             }
             #map-container {
                 flex: 1;
-                min-height: 50vh;
+                min-height: 40vh; /* Etwas Platz für das Infopanel lassen */
+                width: 100%;
             }
             #info-panel {
                 flex: 1;
-                min-width: 100%;
+                width: 100%;
+                min-width: 0; /* Verhindert horizontales Scrollen auf sehr kleinen Handys */
+                padding: 15px; /* Weniger leerer Rand auf kleinen Bildschirmen */
+            }
+            h1 { 
+                font-size: 1.3em; /* Überschrift leicht verkleinern */
+                margin-bottom: 10px; 
+            }
+            #tooltip {
+                display: none !important; /* Tooltips stören auf Touchscreens */
             }
         }
     </style>
@@ -478,7 +490,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
 </body>
-                <!-- Google Tag Manager (noscript) -->
+    <!-- Google Tag Manager (noscript) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P5NQ7X55"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
