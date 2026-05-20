@@ -289,17 +289,34 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         }
 
         /* Responsive Anpassung für mobile Geräte */
-        @media (max-width: 768px) {
-            body { flex-direction: column; }
-            #map-container { flex: 1; min-height: 40vh; width: 100%; }
-            #info-panel { flex: 1; width: 100%; min-width: 0; padding: 15px; }
-            h1 { font-size: 1.3em; margin-bottom: 10px; }
-            #tooltip { display: none !important; }
-            #search-container { top: 10px; right: 10px; left: 10px; }
-            #country-search { width: 100%; box-sizing: border-box; }
-            #country-search:focus { width: 100%; }
-            #default-legend, #map-legend { bottom: 10px; left: 10px; font-size: 12px; padding: 8px; }
-        }
+@media (max-width: 768px) {
+    body { 
+        flex-direction: column; 
+        height: auto; /* Ermöglicht das Scrollen der ganzen Seite */
+        overflow: auto; /* Erlaubt den Scroll-Balken */
+    }
+    
+    #map-container { 
+        flex: none; /* Keine feste Verteilung */
+        height: 40vh; /* Karte nimmt 40% der Bildschirmhöhe ein */
+        width: 100%; 
+    }
+    
+    #info-panel { 
+        flex: none; /* Keine feste Verteilung */
+        width: 100%; 
+        min-width: 0; 
+        padding: 15px; 
+        overflow-y: visible; /* Inhalt bestimmt die Höhe */
+    }
+    
+    h1 { font-size: 1.3em; margin-bottom: 10px; }
+    #tooltip { display: none !important; }
+    #search-container { top: 10px; right: 10px; left: 10px; }
+    #country-search { width: 100%; box-sizing: border-box; }
+    #country-search:focus { width: 100%; }
+    #default-legend, #map-legend { bottom: 10px; left: 10px; font-size: 12px; padding: 8px; }
+}
     </style>
 </head>
 <body>
