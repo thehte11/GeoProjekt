@@ -175,7 +175,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
         /* Farben für Haupt- und Nebenrollen */
         .country.role-major { fill: #3498db; } /* Dunkelblau für Hauptakteure */
-        .country.role-minor { fill: #a9cce3; } /* Hellblau für Nebenrollen */
+        .country.role-minor { fill: #40BBFF; } /* Hellblau für Nebenrollen */
         .country.role-none { fill: #ecf0f1; }  /* Hellgrau für Länder ohne erfasste Rolle */
 
         /* Farb-Klassen für Such-Hervorhebungen */
@@ -313,7 +313,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <!-- Standard-Legende (Hauptrolle / Nebenrolle) -->
         <div id="default-legend">
             <div class="legend-item"><span class="legend-color" style="background: #3498db;"></span> Hauptakteur (Detaillierte Infos)</div>
-            <div class="legend-item"><span class="legend-color" style="background: #a9cce3;"></span> Beteiligt (Liefert Rohstoffe/Bauteile)</div>
+            <div class="legend-item"><span class="legend-color" style="background: #40BBFF;"></span> Beteiligt (Liefert Rohstoffe/Bauteile)</div>
             <div class="legend-item"><span class="legend-color" style="background: #ecf0f1;"></span> Keine erfasste Rolle</div>
         </div>
 
