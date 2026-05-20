@@ -184,6 +184,37 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         .info-section p { line-height: 1.5; color: #34495e; margin-top: 5px; }
         #default-message { color: #7f8c8d; font-style: italic; margin-top: 20px; background: #fdf2f0; padding: 15px; border-radius: 5px;}
 
+        /* --- NEU: Styling für die Suchergebnisse im Panel --- */
+        #search-results {
+            display: none;
+            margin-top: 20px;
+        }
+        #search-results h3 {
+            color: #2c3e50;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        .search-result-item {
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            background-color: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 15px;
+            color: #2c3e50;
+        }
+        .search-result-item:hover {
+            background-color: #eaf2f8;
+            border-color: #3498db;
+            color: #2980b9;
+        }
+        .search-result-item.has-cpu-data {
+            border-left: 5px solid #3498db;
+            font-weight: bold;
+        }
+
         /* Kleines Pop-up am Mauszeiger */
         #tooltip {
             position: absolute;
@@ -222,7 +253,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             #tooltip {
                 display: none !important;
             }
-            /* Suchleiste für Handys anpassen */
             #search-container {
                 top: 10px;
                 right: 10px;
@@ -243,7 +273,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <div id="map-container">
         <!-- Suchleiste oben rechts auf der Karte -->
         <div id="search-container">
-            <!-- Die "list" Eigenschaft wurde entfernt, damit keine Dropdown-Liste erscheint -->
             <input type="text" id="country-search" placeholder="Land suchen (z.B. Deu)..." autocomplete="off">
         </div>
 
@@ -255,7 +284,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <h1>Die globale CPU-Lieferkette</h1>
         
         <div id="default-message">
-            Klicke auf ein beliebiges Land oder nutze die Suche.
+            Klicke auf ein beliebiges Land oder nutze die Suche auf der Karte.
+        </div>
+
+        <!-- NEU: Container für die Suchergebnisse -->
+        <div id="search-results">
+            <!-- Wird per JavaScript mit klickbaren Ergebnissen gefüllt -->
         </div>
 
         <div id="country-details" class="info-section">
@@ -504,11 +538,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             }
         };
 
-        // Funktion, um die Daten im rechten Panel zu aktualisieren
+        // Funktion, um die finalen Daten im rechten Panel zu aktualisieren
         function triggerCountryInfo(countryNameOriginal) {
             const translatedName = countryTranslations[countryNameOriginal] || countryNameOriginal;
             
+            // Alles andere verstecken, nur die Info anzeigen
             document.getElementById("default-message").style.display = "none";
+            document.getElementById("search-results").style.display = "none";
             document.getElementById("country-details").style.display = "block";
             
             if(cpuData[countryNameOriginal]) {
@@ -574,7 +610,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     const displayName = cpuData[countryNameOriginal] ? cpuData[countryNameOriginal].name : translatedName;
                     
                     tooltip.style("opacity", 1).html(displayName);
-                    // Nur nach vorne holen, wenn es nicht gerade von der Suche blockiert wird
+                    // Nur nach vorne holen, wenn es nicht gerade von der Suche blockiert/markiert wird
                     if (!d3.select(this).classed("highlighted-country")) {
                         d3.select(this).raise(); 
                     }
@@ -601,18 +637,31 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     document.getElementById("country-search").value = displayName;
                 });
 
-            // --- NEU: Live-Suchleisten-Funktionalität (Markiert Länder, die mit den Buchstaben beginnen) ---
+            // --- NEU: Live-Suche füllt das rechte Panel und markiert die Karte ---
             const searchInput = document.getElementById("country-search");
+            
             searchInput.addEventListener("input", function(e) {
                 const searchValue = e.target.value.toLowerCase().trim();
+                const resultsContainer = document.getElementById("search-results");
                 
                 if (searchValue === "") {
-                    // Alle Markierungen entfernen, wenn Suchfeld leer ist
+                    // Suchfeld leer: Karte bereinigen und Panel auf Standard setzen
                     g.selectAll("path").classed("highlighted-country", false);
+                    resultsContainer.style.display = "none";
+                    document.getElementById("country-details").style.display = "none";
+                    document.getElementById("default-message").style.display = "block";
                     return;
                 }
 
-                // Jedes Land durchgehen und prüfen, ob der deutsche Name mit der Eingabe beginnt
+                // Panel für Suchergebnisse vorbereiten
+                resultsContainer.innerHTML = "<h3>Wähle ein Land aus:</h3>";
+                resultsContainer.style.display = "block";
+                document.getElementById("default-message").style.display = "none";
+                document.getElementById("country-details").style.display = "none";
+
+                let matchCount = 0;
+
+                // Jedes Land durchgehen und prüfen
                 g.selectAll("path").each(function(d) {
                     const countryNameOriginal = d.properties.name;
                     const translatedName = countryTranslations[countryNameOriginal] || countryNameOriginal;
@@ -623,11 +672,40 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     
                     d3.select(this).classed("highlighted-country", isMatch);
                     
-                    // Treffer in den Vordergrund holen, damit die gelben Ränder perfekt sichtbar sind
                     if (isMatch) {
                         d3.select(this).raise();
+                        matchCount++;
+
+                        // Erstelle einen anklickbaren Listeneintrag für das Panel
+                        const div = document.createElement("div");
+                        div.className = "search-result-item";
+                        if(cpuData[countryNameOriginal]) {
+                            div.classList.add("has-cpu-data");
+                        }
+                        div.innerText = displayName;
+                        
+                        // Klick auf das Suchergebnis im Panel
+                        div.onclick = function() {
+                            // Karte bereinigen und nur dieses Land markieren
+                            g.selectAll("path").classed("highlighted-country", false);
+                            g.selectAll("path")
+                             .filter(p => p.properties.name === countryNameOriginal)
+                             .classed("highlighted-country", true)
+                             .raise();
+
+                            // Suchfeld aktualisieren und Info anzeigen
+                            document.getElementById("country-search").value = displayName;
+                            triggerCountryInfo(countryNameOriginal);
+                        };
+                        
+                        resultsContainer.appendChild(div);
                     }
                 });
+
+                // Falls kein Land gefunden wurde
+                if(matchCount === 0) {
+                    resultsContainer.innerHTML += "<p style='color: #7f8c8d; font-style: italic;'>Kein Land gefunden.</p>";
+                }
             });
 
         }).catch(function(error) {
