@@ -430,7 +430,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             "Chile": { 
                 abbau: "Kupfer", 
                 verarbeitung: "Kupferkonzentrate",
-                verwendung: "Kupfer bildet die winzigen Leiterbahnen direkt auf dem Silizium-Chip und wird massiv für den dicken, wärmeableitenden Deckel (Heatspreader) der CPU verwendet.",
+                verwendung: "Kupfer bildet die winzigen Leiterbahnen direkt auf dem Silizium-Chip und wird massiv für den dicken, wärmeableitenden Deckel (Heatspreader) der CPU. verwendet.",
                 arbeitsbedingungen: "Der industrielle Bergbau ist stark gewerkschaftlich organisiert und formell reguliert. Dennoch bleiben Minenarbeiter hohen gesundheitlichen Belastungen (Feinstaub, Chemikalien) ausgesetzt."
             },
             "Peru": { 
@@ -549,8 +549,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             }
         };
 
-        // Die 23 Bauteile
+        // Die 24 Bauteile
         const cpuData = {
+            cpu: { name: "Smartphone-CPU", category: "LOGIC", materials: ["Silizium", "Kupfer", "Gold", "Tantal", "Wolfram", "Hafnium"], geography: { mining: ["China", "USA", "DR Kongo", "Chile", "Australien", "Südafrika", "Brasilien", "Ruanda"], manufacturing: ["Taiwan", "Südkorea", "USA", "Deutschland", "Japan", "Frankreich"] }, technicalSummary: "Der zentrale Hauptprozessor (Central Processing Unit), meist als Teil des SoC. Übernimmt die Kern-Rechenoperationen und Steuerung des Systems." },
             gpu: { name: "Smartphone-GPU", category: "LOGIC", materials: ["Silizium", "Kupfer", "Gold", "Tantal"], geography: { mining: ["China", "Chile", "Australien", "DR Kongo"], manufacturing: ["Taiwan", "Südkorea", "USA"] }, technicalSummary: "Grafikprozessor, oft direkt in den SoC integriert. Übernimmt hochparallele Rechenaufgaben für Rendering." },
             soc: { name: "Smartphone-SoC", category: "LOGIC", materials: ["Silizium", "Kupfer", "Gold", "Tantal", "Bor", "Phosphor"], geography: { mining: ["China", "Australien", "DR Kongo", "USA", "Chile"], manufacturing: ["Taiwan", "Südkorea", "USA"] }, technicalSummary: "System-on-a-Chip: Das zentrale Rechengehirn (CPU, GPU, NPU)." },
             pcb: { name: "Smartphone-Hauptplatine (PCB)", category: "PLATFORM", materials: ["Kupfer", "Gold", "Zinn", "Silber", "Epoxidharz", "Glasfaser"], geography: { mining: ["Chile", "Peru", "China", "Australien", "Mexiko", "Indonesien"], manufacturing: ["China", "Taiwan", "Japan"] }, technicalSummary: "Das High-Density-Interconnect (HDI) Board aus dutzenden Schichten, das alle Komponenten elektrisch verbindet." },
