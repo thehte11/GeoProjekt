@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-VYQCXM2XRR"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-VYQCXM2XRR"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -10,17 +9,14 @@
 
   gtag('config', 'G-VYQCXM2XRR');
 </script>
-    <!-- Google Tag Manager -->
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
 j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
 })(window,document,'script','dataLayer','GTM-P5NQ7X55');</script>
-<!-- End Google Tag Manager -->
-    <script data-cfasync="false" type="text/javascript" src="https://cache.consentframework.com/js/pa/51632/c/hz9Ky/stub?source=google-tag"></script>
+<script data-cfasync="false" type="text/javascript" src="https://cache.consentframework.com/js/pa/51632/c/hz9Ky/stub?source=google-tag"></script>
 <script data-cfasync="false" type="text/javascript" src="https://choices.consentframework.com/js/pa/51632/c/hz9Ky/cmp?source=google-tag" async></script>
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-VYQCXM2XRR"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-VYQCXM2XRR"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -28,21 +24,19 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
   gtag('config', 'G-VYQCXM2XRR');
 </script>
-    <!-- Google Tag Manager -->
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
 j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
 })(window,document,'script','dataLayer','GTM-T6TKH6F9');</script>
-<!-- End Google Tag Manager -->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
     <title>Die globale Smartphone-Lieferkette</title>
 
-    <!-- CookieYes -->
     <script id="cookieyes" type="text/javascript" src="https://cdn-cookieyes.com/client_data/d95b9c572a618c7cf3c880cf/script.js"></script>
     
-    <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-VYQCXM2XRR"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -51,15 +45,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       gtag('config', 'G-VYQCXM2XRR');
     </script>
     
-    <!-- Google Tag Manager -->
     <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
     j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','GTM-T6TKH6F9');</script>
-    <!-- End Google Tag Manager -->
-
-    <!-- D3.js für Karte und Zoom-Funktionen laden -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         body {
@@ -69,7 +59,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             background-color: #f4f7f6;
             display: flex;
             height: 100vh;
+            height: 100dvh; /* Behebt das Abschneiden unten in Safari */
+            width: 100vw;   /* Hält die Breite strikt fest */
             overflow: hidden;
+            overscroll-behavior: none; /* Verhindert den Safari "Gummiband"-Bouncing-Effekt */
         }
 
         /* Der linke Bereich für die Karte */
@@ -78,6 +71,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             background-color: #aadaff; /* Ozean-Farbe */
             position: relative;
             cursor: grab;
+            touch-action: none; /* WICHTIG! Stoppt Safari-Wischgesten */
         }
 
         #map-container:active {
@@ -115,7 +109,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
         #country-search {
             padding: 12px 15px;
-            font-size: 14px;
+            font-size: 16px; /* Mindestens 16px verhindert iOS Auto-Zoom in Eingabefeldern */
             border: 2px solid #3498db;
             border-radius: 25px;
             outline: none;
@@ -144,7 +138,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             z-index: 100;
         }
         #map-legend {
-            display: none; /* Standardmäßig unsichtbar, wird bei Suche aktiviert */
+            display: none;
         }
         .legend-item {
             display: flex;
@@ -174,15 +168,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         }
 
         /* Farben für Haupt- und Nebenrollen */
-        .country.role-major { fill: #3498db; } /* Dunkelblau für Hauptakteure */
-        .country.role-minor { fill: #40BBFF; } /* Hellblau für Nebenrollen */
-        .country.role-none { fill: #ecf0f1; }  /* Hellgrau für Länder ohne erfasste Rolle */
+        .country.role-major { fill: #3498db; }
+        .country.role-minor { fill: #40BBFF; }
+        .country.role-none { fill: #ecf0f1; }
 
         /* Farb-Klassen für Such-Hervorhebungen */
-        .highlighted-country { fill: #f1c40f !important; stroke: #ffffff !important; stroke-width: 2.5px !important; } /* Gelb */
-        .highlighted-mining { fill: #e67e22 !important; stroke: #ffffff !important; stroke-width: 2.5px !important; } /* Orange */
-        .highlighted-manufacturing { fill: #9b59b6 !important; stroke: #ffffff !important; stroke-width: 2.5px !important; } /* Lila */
-        .highlighted-both { fill: #e74c3c !important; stroke: #ffffff !important; stroke-width: 2.5px !important; } /* Rot */
+        .highlighted-country { fill: #f1c40f !important; stroke: #ffffff !important; stroke-width: 2.5px !important; }
+        .highlighted-mining { fill: #e67e22 !important; stroke: #ffffff !important; stroke-width: 2.5px !important; }
+        .highlighted-manufacturing { fill: #9b59b6 !important; stroke: #ffffff !important; stroke-width: 2.5px !important; }
+        .highlighted-both { fill: #e74c3c !important; stroke: #ffffff !important; stroke-width: 2.5px !important; }
 
         /* HOVER: Dicker weißer Umriss für hervorgehobene */
         .country.role-major:hover, .country.role-minor:hover {
@@ -251,7 +245,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             margin-bottom: 3px;
         }
 
-        /* --- NEU: Klickbare Tags im Info-Panel --- */
+        /* Klickbare Tags im Info-Panel */
         .clickable-tag {
             display: inline-block;
             background-color: #eaf2f8;
@@ -289,52 +283,49 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         }
 
         /* Responsive Anpassung für mobile Geräte */
-@media (max-width: 768px) {
-    body { 
-        flex-direction: column; 
-        height: auto; /* Ermöglicht das Scrollen der ganzen Seite */
-        overflow: auto; /* Erlaubt den Scroll-Balken */
-    }
-    
-    #map-container { 
-        flex: none; /* Keine feste Verteilung */
-        height: 40vh; /* Karte nimmt 40% der Bildschirmhöhe ein */
-        width: 100%; 
-    }
-    
-    #info-panel { 
-        flex: none; /* Keine feste Verteilung */
-        width: 100%; 
-        min-width: 0; 
-        padding: 15px; 
-        overflow-y: visible; /* Inhalt bestimmt die Höhe */
-    }
-    
-    h1 { font-size: 1.3em; margin-bottom: 10px; }
-    #tooltip { display: none !important; }
-    #search-container { top: 10px; right: 10px; left: 10px; }
-    #country-search { width: 100%; box-sizing: border-box; }
-    #country-search:focus { width: 100%; }
-    #default-legend, #map-legend { bottom: 10px; left: 10px; font-size: 12px; padding: 8px; }
-}
+        @media (max-width: 768px) {
+            body { 
+                flex-direction: column; 
+                height: auto; 
+                overflow: auto; 
+            }
+            
+            #map-container { 
+                flex: none; 
+                height: 40vh; 
+                width: 100%; 
+            }
+            
+            #info-panel { 
+                flex: none; 
+                width: 100%; 
+                min-width: 0; 
+                padding: 15px; 
+                overflow-y: visible; 
+            }
+            
+            h1 { font-size: 1.3em; margin-bottom: 10px; }
+            #tooltip { display: none !important; }
+            #search-container { top: 10px; right: 10px; left: 10px; }
+            #country-search { width: 100%; box-sizing: border-box; }
+            #country-search:focus { width: 100%; }
+            #default-legend, #map-legend { bottom: 10px; left: 10px; font-size: 12px; padding: 8px; }
+        }
     </style>
 </head>
 <body>
 
     <div id="map-container">
-        <!-- Suchleiste oben rechts auf der Karte -->
         <div id="search-container">
             <input type="text" id="country-search" placeholder="Land, Bauteil oder Mineral suchen..." autocomplete="off">
         </div>
         
-        <!-- Standard-Legende (Hauptrolle / Nebenrolle) -->
         <div id="default-legend">
             <div class="legend-item"><span class="legend-color" style="background: #3498db;"></span> Hauptakteur (Detaillierte Infos)</div>
             <div class="legend-item"><span class="legend-color" style="background: #40BBFF;"></span> Beteiligt (Liefert Rohstoffe/Bauteile)</div>
             <div class="legend-item"><span class="legend-color" style="background: #ecf0f1;"></span> Keine erfasste Rolle</div>
         </div>
 
-        <!-- Such-Legende für Fördern/Verarbeiten -->
         <div id="map-legend">
             <div class="legend-item"><span class="legend-color" style="background: #e67e22;"></span> Rohstoff-Abbau (Fördern)</div>
             <div class="legend-item"><span class="legend-color" style="background: #9b59b6;"></span> Verarbeitung & Montage</div>
@@ -352,10 +343,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             Klicke auf ein beliebiges Land oder nutze die Suche auf der Karte, um Bauteile, Rohstoffe oder Länder zu analysieren.
         </div>
 
-        <!-- Container für die Suchergebnisse -->
         <div id="search-results"></div>
 
-        <!-- Container für die Detailansicht (wird dynamisch befüllt) -->
         <div id="country-details" class="info-section"></div>
     </div>
 
@@ -388,7 +377,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             "Zambia": "Sambia", "Zimbabwe": "Simbabwe"
         };
 
-        // --- TEIL 1: Die detaillierten Texte zu den Ländern (Ethik, Abbau etc.) ---
+        // Die detaillierten Texte zu den Ländern
         const countryNarratives = {
             "China": { 
                 abbau: "Quarzsand (Silizium & Glasfaser), Phosphaterze, Wolfram (>80%), Gold, Zinn, Silber, Indium", 
@@ -560,7 +549,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             }
         };
 
-        // --- TEIL 2: Die 23 Bauteile (Komponenten) des Smartphones ---
+        // Die 23 Bauteile
         const cpuData = {
             gpu: { name: "Smartphone-GPU", category: "LOGIC", materials: ["Silizium", "Kupfer", "Gold", "Tantal"], geography: { mining: ["China", "Chile", "Australien", "DR Kongo"], manufacturing: ["Taiwan", "Südkorea", "USA"] }, technicalSummary: "Grafikprozessor, oft direkt in den SoC integriert. Übernimmt hochparallele Rechenaufgaben für Rendering." },
             soc: { name: "Smartphone-SoC", category: "LOGIC", materials: ["Silizium", "Kupfer", "Gold", "Tantal", "Bor", "Phosphor"], geography: { mining: ["China", "Australien", "DR Kongo", "USA", "Chile"], manufacturing: ["Taiwan", "Südkorea", "USA"] }, technicalSummary: "System-on-a-Chip: Das zentrale Rechengehirn (CPU, GPU, NPU)." },
@@ -587,7 +576,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             speaker: { name: "Smartphone-Lautsprecher", category: "AUDIO", materials: ["Neodym", "Eisen", "Kupfer", "PEEK", "Glasfaser", "Edelstahl", "Chrom", "Messing", "Gold"], geography: { mining: ["China", "Chile", "Peru", "USA", "Deutschland", "Großbritannien", "Südafrika", "Brasilien"], manufacturing: ["China", "Vietnam", "Japan"] }, technicalSummary: "Elektromechanisches Modul (Neodym-Antrieb, PEEK-Membran)." }
         };
 
-        // --- Hilfsfunktionen zur Datenermittlung ---
+        // Hilfsfunktionen
         function getAllUniqueMaterials() {
             const matSet = new Set();
             Object.values(cpuData).forEach(data => data.materials.forEach(m => matSet.add(m)));
@@ -634,7 +623,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             };
         }
 
-        // --- NEU: Generator für klickbare Tags ---
+        // Generator für klickbare Tags
         function generateTags(list, type, emptyMessage = "-") {
             if (!list || list.length === 0) return `<span style="color: #7f8c8d; font-style: italic;">${emptyMessage}</span>`;
             return list.map(item => {
@@ -643,16 +632,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             }).join(" ");
         }
 
-        // --- NEU: Globale Klick-Handler für Tags ---
+        // Globale Klick-Handler für Tags
         window.handleTagClick = function(type, value) {
             document.getElementById("country-search").value = value;
             
             if (type === 'mineral') {
                 showMineralInfo(value);
             } else if (type === 'country') {
-                // Suche den passenden englischen Namen für das GeoJSON anhand des deutschen Namens
                 let enName = Object.keys(countryTranslations).find(key => countryTranslations[key] === value);
-                if (!enName) enName = value; // Fallback
+                if (!enName) enName = value;
                 showCountryInfo(enName);
             } else if (type === 'component') {
                 const comp = Object.values(cpuData).find(c => c.name === value);
@@ -660,7 +648,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             }
         };
 
-        // Funktion zum farblichen Hervorheben (Orange/Lila/Rot) nach Rollen
         function highlightRoles(miningArray, manufacturingArray) {
             g.selectAll("path").classed("highlighted-country highlighted-mining highlighted-manufacturing highlighted-both", false);
             
@@ -684,7 +671,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             document.getElementById("map-legend").style.display = "block";
         }
 
-        // DOM & UI Setup (Rendering des Info-Panels)
         function renderDetails(title, sections) {
             document.getElementById("default-message").style.display = "none";
             document.getElementById("search-results").style.display = "none";
@@ -700,8 +686,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             });
             container.innerHTML = html;
         }
-
-        // --- Anzeige Logik für die 3 Such-Typen ---
         
         function showCountryInfo(countryEn) {
             const countryDe = countryTranslations[countryEn] || countryEn;
@@ -717,7 +701,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             let sections = [];
 
             if (info.components.length > 0) {
-                // Hier generieren wir klickbare Tags für Rohstoffe und Bauteile
                 sections.push({ title: "Wird hier gefördert (Rohstoffe)", content: generateTags(info.mining, 'mineral', 'Kein primärer Abbau erfasst.') });
                 sections.push({ title: "Wird hier verarbeitet / montiert", content: generateTags(info.manufacturing.map(c => c.name), 'component', 'Keine Endmontage erfasst.') });
                 sections.push({ title: "Beteiligt an Smartphone-Bauteilen", content: generateTags(info.components.map(c => c.name), 'component', 'Keine Beteiligung.') });
@@ -791,7 +774,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         d3.json("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson").then(function(data) {
             document.getElementById("loading").style.display = "none";
 
-            // Alle Länder zeichnen und Rollen-Farben vergeben
             g.selectAll("path")
                 .data(data.features)
                 .enter()
@@ -807,11 +789,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     
                     let baseClass = "country ";
                     if (hasNarrative) {
-                        return baseClass + "role-major"; // Dunkelblau
+                        return baseClass + "role-major";
                     } else if (hasComponent) {
-                        return baseClass + "role-minor"; // Hellblau
+                        return baseClass + "role-minor";
                     } else {
-                        return baseClass + "role-none";  // Grau
+                        return baseClass + "role-none";
                     }
                 })
                 .on("mouseover", function(event, d) {
@@ -846,7 +828,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 const resultsContainer = document.getElementById("search-results");
                 
                 if (term === "") {
-                    // Suche zurückgesetzt -> Map Highlights entfernen, Standard Legende zeigen
                     g.selectAll("path").classed("highlighted-country highlighted-mining highlighted-manufacturing highlighted-both", false);
                     document.getElementById("map-legend").style.display = "none";
                     document.getElementById("default-legend").style.display = "block";
@@ -914,17 +895,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         });
     </script>
     
-    <!-- Google Tag Manager (noscript) -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T6TKH6F9"
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-    <!-- End Google Tag Manager (noscript) -->
-</body>
-    <!-- Google Tag Manager (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P5NQ7X55"
+    </body>
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P5NQ7X55"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<!-- End Google Tag Manager (noscript) -->
-<!-- Google Tag Manager (noscript) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T6TKH6F9"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<!-- End Google Tag Manager (noscript) -->
 </html>
