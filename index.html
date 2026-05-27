@@ -231,8 +231,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         }
         .search-result-item:hover {
             background-color: #eaf2f8;
-            border-color: #3498db;
-            color: #2980b9;
+            border-color: #bdc3c7;
         }
         
         /* Verschiedene Farben für die Suchkategorien */
@@ -885,40 +884,111 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 document.getElementById("default-legend").style.display = "none";
                 resultsContainer.innerHTML = "<h3>Suchergebnisse:</h3>";
 
-                const results = { comps: [], mins: [], lands: [] };
+                // Funktion zur Berechnung der Relevanz (Score)
+                function calcScore(searchTerm, textStr) {
+                    textStr = textStr.toLowerCase();
+                    if (textStr === searchTerm) return 100; // Exakter Treffer (am relevantesten)
+                    if (textStr.startsWith(searchTerm)) return 50; // Wort beginnt mit der Suche
+                    if (textStr.includes(searchTerm)) return 10; // Irgendwo im Wort enthalten
+                    return 0;
+                }
 
-                // Bauteil-Suche mit englischen Übersetzungsbegriffen kombinieren
+                const searchResults = [];
+
+                // 1. Bauteile prüfen
                 Object.values(cpuData).forEach(c => {
+                    let score = 0;
+                    const deName = c.name.toLowerCase();
+                    const cat = c.category.toLowerCase();
+                    
+                    score = Math.max(score, calcScore(term, deName));
+                    if (cat.includes(term)) score = Math.max(score, 5); // Kategorie-Treffer
+                    
                     const enTerms = componentTranslations[c.name] || [];
-                    const matchesEn = enTerms.some(t => t.includes(term));
-                    if (c.name.toLowerCase().includes(term) || c.category.toLowerCase().includes(term) || matchesEn) {
-                        results.comps.push(c);
+                    enTerms.forEach(t => {
+                        const s = calcScore(term, t);
+                        if (s > 0) score = Math.max(score, s - 1); // Englische Treffer minimal abwerten
+                    });
+
+                    if (score > 0) {
+                        searchResults.push({ 
+                            text: c.name, 
+                            typeLabel: "Bauteil", 
+                            typeClass: "result-bauteil", 
+                            score: score, 
+                            onClickFn: () => showComponentInfo(c) 
+                        });
                     }
                 });
 
-                // Material-Suche mit englischen Übersetzungsbegriffen kombinieren
+                // 2. Rohstoffe prüfen
                 allMaterials.forEach(m => {
+                    let score = 0;
+                    const deName = m.toLowerCase();
+                    
+                    score = Math.max(score, calcScore(term, deName));
+                    
                     const enTerms = materialTranslations[m] || [];
-                    const matchesEn = enTerms.some(t => t.includes(term));
-                    if (m.toLowerCase().includes(term) || matchesEn) {
-                        results.mins.push(m);
+                    enTerms.forEach(t => {
+                        const s = calcScore(term, t);
+                        if (s > 0) score = Math.max(score, s - 1);
+                    });
+
+                    if (score > 0) {
+                        searchResults.push({ 
+                            text: m, 
+                            typeLabel: "Rohstoff", 
+                            typeClass: "result-rohstoff", 
+                            score: score, 
+                            onClickFn: () => showMineralInfo(m) 
+                        });
                     }
                 });
 
+                // 3. Länder prüfen
                 g.selectAll("path").each(function(d) {
                     const en = d.properties.name;
                     const de = countryTranslations[en] || en;
-                    if (en.toLowerCase().includes(term) || de.toLowerCase().includes(term)) {
-                        results.lands.push({ en, de });
+                    let score = 0;
+                    
+                    score = Math.max(score, calcScore(term, de));
+                    const enScore = calcScore(term, en);
+                    if (enScore > 0) score = Math.max(score, enScore - 1);
+
+                    if (score > 0) {
+                        searchResults.push({ 
+                            text: de, 
+                            typeLabel: "Land", 
+                            typeClass: "result-land", 
+                            score: score, 
+                            onClickFn: () => showCountryInfo(en) 
+                        });
                     }
                 });
 
-                if (results.comps.length === 0 && results.mins.length === 0 && results.lands.length === 0) {
+                if (searchResults.length === 0) {
                     resultsContainer.innerHTML += "<p style='color: #7f8c8d; font-style: italic;'>Keine Treffer gefunden.</p>";
                     return;
                 }
 
-                // Die appendResult Funktion wurde um die CSS-Klasse (typeClass) erweitert
+                // Duplikate filtern (besonders wichtig für Länder mit mehreren Polygonen auf der Karte)
+                const uniqueResults = [];
+                const seen = new Set();
+                searchResults.forEach(r => {
+                    const id = r.typeLabel + ":" + r.text;
+                    if (!seen.has(id)) {
+                        seen.add(id);
+                        uniqueResults.push(r);
+                    }
+                });
+
+                // Ergebnisse nach Score (Relevanz) absteigend sortieren, bei Gleichstand alphabetisch
+                uniqueResults.sort((a, b) => {
+                    if (b.score !== a.score) return b.score - a.score;
+                    return a.text.localeCompare(b.text);
+                });
+
+                // Sortierte Ergebnisse ins HTML rendern
                 const appendResult = (text, typeLabel, typeClass, onClickFn) => {
                     const div = document.createElement("div");
                     div.className = `search-result-item ${typeClass}`;
@@ -930,10 +1000,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     resultsContainer.appendChild(div);
                 };
 
-                // Hier werden nun die verschiedenen Kategorien mit den passenden CSS-Klassen aufgerufen
-                results.comps.forEach(c => appendResult(c.name, "Bauteil", "result-bauteil", () => showComponentInfo(c)));
-                results.mins.forEach(m => appendResult(m, "Rohstoff", "result-rohstoff", () => showMineralInfo(m)));
-                results.lands.forEach(l => appendResult(l.de, "Land", "result-land", () => showCountryInfo(l.en)));
+                uniqueResults.forEach(item => {
+                    appendResult(item.text, item.typeLabel, item.typeClass, item.onClickFn);
+                });
             });
 
         }).catch(function(error) {
