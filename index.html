@@ -234,9 +234,18 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             border-color: #3498db;
             color: #2980b9;
         }
-        .search-result-item.has-cpu-data {
-            border-left: 5px solid #3498db;
+        
+        /* Verschiedene Farben für die Suchkategorien */
+        .search-result-item.result-land {
+            border-left: 5px solid #3498db; /* Blau */
         }
+        .search-result-item.result-bauteil {
+            border-left: 5px solid #9b59b6; /* Lila */
+        }
+        .search-result-item.result-rohstoff {
+            border-left: 5px solid #e67e22; /* Orange */
+        }
+
         .search-type-label {
             font-size: 0.8em;
             color: #7f8c8d;
@@ -909,9 +918,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     return;
                 }
 
-                const appendResult = (text, typeLabel, onClickFn) => {
+                // Die appendResult Funktion wurde um die CSS-Klasse (typeClass) erweitert
+                const appendResult = (text, typeLabel, typeClass, onClickFn) => {
                     const div = document.createElement("div");
-                    div.className = "search-result-item has-cpu-data";
+                    div.className = `search-result-item ${typeClass}`;
                     div.innerHTML = `<div class="search-type-label">${typeLabel}</div>${text}`;
                     div.onclick = () => {
                         document.getElementById("country-search").value = text;
@@ -920,9 +930,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     resultsContainer.appendChild(div);
                 };
 
-                results.comps.forEach(c => appendResult(c.name, "Bauteil", () => showComponentInfo(c)));
-                results.mins.forEach(m => appendResult(m, "Rohstoff", () => showMineralInfo(m)));
-                results.lands.forEach(l => appendResult(l.de, "Land", () => showCountryInfo(l.en)));
+                // Hier werden nun die verschiedenen Kategorien mit den passenden CSS-Klassen aufgerufen
+                results.comps.forEach(c => appendResult(c.name, "Bauteil", "result-bauteil", () => showComponentInfo(c)));
+                results.mins.forEach(m => appendResult(m, "Rohstoff", "result-rohstoff", () => showMineralInfo(m)));
+                results.lands.forEach(l => appendResult(l.de, "Land", "result-land", () => showCountryInfo(l.en)));
             });
 
         }).catch(function(error) {
