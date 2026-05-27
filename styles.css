@@ -377,6 +377,38 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             "Zambia": "Sambia", "Zimbabwe": "Simbabwe"
         };
 
+        // Wörterbücher für die englische Suche von Bauteilen und Materialien
+        const materialTranslations = {
+            "Silizium": ["silicon"], "Kupfer": ["copper"], "Gold": ["gold"], "Tantal": ["tantalum"], "Wolfram": ["tungsten"], "Hafnium": ["hafnium"], "Bor": ["boron"], "Phosphor": ["phosphorus"], "Zinn": ["tin"], "Silber": ["silver"], "Epoxidharz": ["epoxy", "epoxy resin", "resin"], "Glasfaser": ["fiberglass", "glass fiber"], "Kohlenstoff": ["carbon"], "Glas": ["glass"], "Kunststoff": ["plastic"], "Neodym": ["neodymium"], "Eisen": ["iron"], "Aluminium": ["aluminum", "aluminium"], "Lithium": ["lithium"], "Kobalt": ["cobalt"], "Graphit": ["graphite"], "Nickel": ["nickel"], "Mangan": ["manganese"], "Edelstahl": ["stainless steel"], "Ferrit": ["ferrite"], "Zink": ["zinc"], "Lanthan": ["lanthanum"], "Niob": ["niobium"], "Magnesiumfluorid": ["magnesium fluoride"], "Polymere": ["polymers", "polymer"], "Antimon": ["antimony"], "Argon": ["argon"], "Gallium": ["gallium"], "Arsen": ["arsenic"], "Zirkon": ["zirconium"], "Titan": ["titanium"], "Polycarbonat": ["polycarbonate"], "Quarzglas": ["quartz glass", "quartz"], "Germanium": ["germanium"], "PTFE": ["ptfe", "teflon"], "ABS": ["abs"], "LCP": ["lcp"], "Messing": ["brass"], "PEEK": ["peek"], "Chrom": ["chromium", "chrome"]
+        };
+
+        const componentTranslations = {
+            "Smartphone-CPU": ["cpu", "processor", "smartphone cpu"],
+            "Smartphone-GPU": ["gpu", "graphics", "smartphone gpu"],
+            "Smartphone-SoC": ["soc", "system on a chip", "smartphone soc"],
+            "Smartphone-Hauptplatine (PCB)": ["motherboard", "mainboard", "pcb", "printed circuit board"],
+            "Smartphone-NPU": ["npu", "neural processing unit", "smartphone npu"],
+            "LPDDR-RAM": ["ram", "memory"],
+            "NAND-Flash-Speicher": ["nand", "flash memory", "storage"],
+            "OLED-Display-Panel": ["oled", "display", "screen", "panel"],
+            "Smartphone-Digitizer": ["digitizer", "touch screen", "touchscreen"],
+            "LRA (Vibrationsmotor)": ["lra", "vibration motor", "haptic", "motor"],
+            "Lithium-Ionen-Akku": ["battery", "lithium-ion battery", "accumulator"],
+            "PMIC": ["pmic", "power management"],
+            "USB-C-Ladebuchse": ["usb-c", "charging port", "port", "usb"],
+            "Induktionsspule (Wireless Charging)": ["induction coil", "wireless charging", "coil"],
+            "Kameramodul (Sensor-Einheit)": ["camera module", "camera", "sensor"],
+            "MEMS-Gyroskop": ["gyroscope", "gyro"],
+            "MEMS-Beschleunigungssensor": ["accelerometer"],
+            "Annäherungssensor (IR)": ["proximity sensor"],
+            "Umgebungslichtsensor (ALS)": ["ambient light sensor", "als", "light sensor"],
+            "5G-Modem": ["5g modem", "modem", "baseband"],
+            "Antennen-Module": ["antenna", "antenna modules"],
+            "NFC-Chip": ["nfc chip", "nfc"],
+            "MEMS-Mikrofon": ["microphone", "mic"],
+            "Smartphone-Lautsprecher": ["speaker", "loudspeaker"]
+        };
+
         // Die detaillierten Texte zu den Ländern
         const countryNarratives = {
             "China": { 
@@ -466,7 +498,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             "Brazil": { 
                 abbau: "Quarzsand (Silizium), Tantal", 
                 verarbeitung: "-",
-                verwendung: "Silizium als Grundmaterial des Mikrochips. Tantal wird für die extrem feine, lokale Verdrahtung direkt im Silizium-Die verwendet, da es thermisch hochstabil ist.",
+                verwendung: "Silizium als Grundmaterial des Mikrochips. Tantal wird für die extrem feine, local Verdrahtung direkt im Silizium-Die verwendet, da es thermisch hochstabil ist.",
                 arbeitsbedingungen: "Ein Mix aus stark industrialisiertem Bergbau mit guten Standards und informellen Minen ('Garimpos'), in denen prekäre Bedingungen, Umweltzerstörung (Amazonas) und teils illegale Sklavenarbeit herrschen."
             },
             "Turkey": { 
@@ -846,12 +878,22 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
                 const results = { comps: [], mins: [], lands: [] };
 
+                // Bauteil-Suche mit englischen Übersetzungsbegriffen kombinieren
                 Object.values(cpuData).forEach(c => {
-                    if (c.name.toLowerCase().includes(term) || c.category.toLowerCase().includes(term)) results.comps.push(c);
+                    const enTerms = componentTranslations[c.name] || [];
+                    const matchesEn = enTerms.some(t => t.includes(term));
+                    if (c.name.toLowerCase().includes(term) || c.category.toLowerCase().includes(term) || matchesEn) {
+                        results.comps.push(c);
+                    }
                 });
 
+                // Material-Suche mit englischen Übersetzungsbegriffen kombinieren
                 allMaterials.forEach(m => {
-                    if (m.toLowerCase().includes(term)) results.mins.push(m);
+                    const enTerms = materialTranslations[m] || [];
+                    const matchesEn = enTerms.some(t => t.includes(term));
+                    if (m.toLowerCase().includes(term) || matchesEn) {
+                        results.mins.push(m);
+                    }
                 });
 
                 g.selectAll("path").each(function(d) {
