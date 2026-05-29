@@ -382,7 +382,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             "Uganda": "Uganda", "Ukraine": "Ukraine", "United Arab Emirates": "Vereinigte Arabische Emirate", "United Kingdom": "Großbritannien", "England": "Großbritannien", "United States of America": "USA", "USA": "USA", "Uruguay": "Uruguay", "Uzbekistan": "Usbekistan",
             "Vanuatu": "Vanuatu", "Venezuela": "Venezuela", "Vietnam": "Vietnam",
             "Yemen": "Jemen",
-            "Zambia": "Sambia", "Zimbabwe": "Simbabwe"
+            "Zambia": "Sambia", "Zimbabwe": "Simbabwe","Northern Cyprus":"Nordzypern","French Southern and Antarctic Lands":"Die Französischen Süd- und Antarktisgebiete"
         };
 
         // Wörterbücher für die englische Suche von Bauteilen und Materialien
