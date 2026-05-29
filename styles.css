@@ -275,6 +275,24 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
+        /* Klickbare Tags innerhalb der Beschreibungstexte (Fließtext) */
+        .text-link-tag {
+            background-color: #eaf2f8;
+            color: #2980b9;
+            padding: 2px 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid #a9cce3;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .text-link-tag:hover {
+            background-color: #3498db;
+            color: #ffffff;
+            border-color: #2980b9;
+        }
+
         /* Kleines Pop-up am Mauszeiger */
         #tooltip {
             position: absolute;
@@ -664,7 +682,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             };
         }
 
-        // Generator für klickbare Tags
+        // Generator für klickbare Tags (als Blöcke)
         function generateTags(list, type, emptyMessage = "-") {
             if (!list || list.length === 0) return `<span style="color: #7f8c8d; font-style: italic;">${emptyMessage}</span>`;
             return list.map(item => {
@@ -688,6 +706,42 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 if (comp) showComponentInfo(comp);
             }
         };
+
+        // Funktion zum automatischen Verlinken von Rohstoffen und Bauteilen im Fließtext
+        function autoLinkText(text) {
+            if (!text || text === "-") return text;
+            
+            const materials = getAllUniqueMaterials();
+            const components = Object.values(cpuData).map(c => c.name);
+            const terms = [...components, ...materials].sort((a, b) => b.length - a.length);
+            
+            let placeholders = [];
+            
+            terms.forEach((term) => {
+                // Escape RegExp special characters
+                const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const regex = new RegExp(`(${escapedTerm})`, 'gi');
+                
+                // Prüfen ob Text enthalten, um Nested-Replacements zu verhindern
+                if (regex.test(text)) {
+                    text = text.replace(regex, function(match) {
+                        const isMaterial = materials.some(m => m.toLowerCase() === term.toLowerCase());
+                        const originalTerm = isMaterial ? materials.find(m => m.toLowerCase() === term.toLowerCase()) : components.find(c => c.toLowerCase() === term.toLowerCase());
+                        const type = isMaterial ? 'mineral' : 'component';
+                        
+                        placeholders.push(`<span class="text-link-tag" onclick="handleTagClick('${type}', '${originalTerm}')">${match}</span>`);
+                        return `__PLCHLDR${placeholders.length - 1}__`;
+                    });
+                }
+            });
+            
+            placeholders.forEach((html, i) => {
+                const regex = new RegExp(`__PLCHLDR${i}__`, 'g');
+                text = text.replace(regex, html);
+            });
+            
+            return text;
+        }
 
         function highlightRoles(miningArray, manufacturingArray) {
             g.selectAll("path").classed("highlighted-country highlighted-mining highlighted-manufacturing highlighted-both", false);
@@ -749,10 +803,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 sections.push({ title: "Status", content: "Dieses Land spielt in der abgebildeten Smartphone-Lieferkette keine erfasste Hauptrolle." });
             }
 
+            // Hier wird die autoLinkText-Funktion bei den Fließtexten (Abbau, Verarbeitung, Verwendung) aufgerufen
             if (narrative) {
-                sections.push({ title: "Zusammenfassung Abbau", content: narrative.abbau });
-                sections.push({ title: "Zusammenfassung Verarbeitung", content: narrative.verarbeitung });
-                sections.push({ title: "Verwendung im Gerät", content: narrative.verwendung });
+                sections.push({ title: "Zusammenfassung Abbau", content: autoLinkText(narrative.abbau) });
+                sections.push({ title: "Zusammenfassung Verarbeitung", content: autoLinkText(narrative.verarbeitung) });
+                sections.push({ title: "Verwendung im Gerät", content: autoLinkText(narrative.verwendung) });
                 sections.push({ title: "Arbeitsbedingungen & Ethik", content: narrative.arbeitsbedingungen, color: "#e67e22" });
             } else if (info.components.length > 0) {
                 sections.push({ title: "Arbeitsbedingungen & Ethik", content: "Keine spezifischen Daten zu den Arbeitsbedingungen in diesem Land verfügbar.", color: "#e67e22" });
@@ -768,7 +823,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 { title: "Verwendete Rohstoffe", content: generateTags(comp.materials, 'mineral', 'Keine Rohstoffe erfasst.') },
                 { title: "Abbau-Länder (Mining)", content: generateTags(comp.geography.mining, 'country', 'Keine Länder erfasst.') },
                 { title: "Verarbeitungs-Länder (Manufacturing)", content: generateTags(comp.geography.manufacturing, 'country', 'Keine Länder erfasst.') },
-                { title: "Technische Details", content: comp.technicalSummary }
+                { title: "Technische Details", content: autoLinkText(comp.technicalSummary) }
             ]);
         }
 
