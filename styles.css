@@ -791,7 +791,19 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         const svg = d3.select("#map-container")
             .append("svg")
             .attr("viewBox", `0 0 ${width} ${height}`)
-            .attr("preserveAspectRatio", "xMidYMid meet");
+            .attr("preserveAspectRatio", "xMidYMid meet")
+            .on("click", function(event) {
+                // Überprüfe, ob direkt auf das SVG geklickt wurde (also nicht auf einen path/Land)
+                if (event.target.tagName.toLowerCase() === 'svg') {
+                    const searchInput = document.getElementById("country-search");
+                    // Nur zurücksetzen, wenn das Feld nicht schon leer ist
+                    if (searchInput.value !== "") {
+                        searchInput.value = "";
+                        // Manuell ein Input-Event auslösen, damit die Karte zurückgesetzt wird
+                        searchInput.dispatchEvent(new Event('input'));
+                    }
+                }
+            });
 
         const g = svg.append("g");
 
