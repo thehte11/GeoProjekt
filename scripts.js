@@ -12,7 +12,7 @@
         /* --- ORIGINALES GRUND-DESIGN --- */
         body {
             font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
-            margin: 0;
+            margin: g0;
             padding: 0;
             background-color: #f4f7f6;
             display: flex;
