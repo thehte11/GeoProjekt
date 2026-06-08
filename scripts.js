@@ -689,11 +689,11 @@
             const hazmatSea = ["Lithium-Ionen-Akku"]; 
             
             if (hazmatSea.includes(comp.name)) {
-                transportDesc = "<b>🚢 Seefracht (Gefahrgut):</b> Akkus unterliegen strengen IATA-Flugverboten. Sie müssen interkontinental fast ausschließlich sicher in Spezial-Containern verschifft werden.<br><br><b>🚛 Gefahrgut-LKW:</b> Wird für den Transport über verbundene Landmassen genutzt.";
+                transportDesc = "<b>Seefracht (Gefahrgut):</b> Akkus unterliegen strengen IATA-Flugverboten. Sie müssen interkontinental fast ausschließlich sicher in Spezial-Containern verschifft werden.<br><br><b>Gefahrgut-LKW:</b> Wird für den Transport über verbundene Landmassen genutzt.";
             } else if (highValueAir.includes(comp.name)) {
-                transportDesc = "<b>✈️ Luftfracht:</b> Dieses Bauteil ist extrem wertvoll, sensibel und leicht. Um in den kurzen Produktzyklen mithalten zu können, wird es weltweit geflogen.<br><br><b>🚛 Sicherheits-LKW:</b> Übernimmt die kontinentale Feinverteilung von den Flughäfen zu den Fabriken.";
+                transportDesc = "<b>Luftfracht:</b> Dieses Bauteil ist extrem wertvoll, sensibel und leicht. Um in den kurzen Produktzyklen mithalten zu können, wird es weltweit geflogen.<br><br><b>Sicherheits-LKW:</b> Übernimmt die kontinentale Feinverteilung von den Flughäfen zu den Fabriken.";
             } else {
-                transportDesc = "<b>🚢 Container-Seefracht:</b> Wird für Ozean-Routen genutzt, da das Bauteil schwerer oder in Massen benötigt wird.<br><br><b>🚛 LKW / Güterzug:</b> Übernimmt den Massentransport auf zusammenhängenden Landmassen.";
+                transportDesc = "<b>Container-Seefracht:</b> Wird für Ozean-Routen genutzt, da das Bauteil schwerer oder in Massen benötigt wird.<br><br><b>LKW / Güterzug:</b> Übernimmt den Massentransport auf zusammenhängenden Landmassen.";
             }
 
             renderDetails(`Bauteil: ${comp.name}`, [
@@ -711,7 +711,7 @@
             highlightRoles(mapData.miningLocations, mapData.manufacturingLocations);
             
             const usedInComps = Object.values(cpuData).filter(c => c.materials.includes(mineral)).map(c => c.name);
-            const mineralTransportDesc = "<b>🚢 Massengut-Frachter (Bulk):</b> Rohe Mineralien und Erze sind extrem schwer und haben einen geringen Kilo-Wert. Sie werden fast ausschließlich über die Weltmeere verschifft.<br><br><b>🚛 Güterzug / LKW (Schwerlast):</b> Übernimmt den Transport von den Minen zu den Häfen und Schmelzanlagen.";
+            const mineralTransportDesc = "<b>Massengut-Frachter (Bulk):</b> Rohe Mineralien und Erze sind extrem schwer und haben einen geringen Kilo-Wert. Sie werden fast ausschließlich über die Weltmeere verschifft.<br><br><b>Güterzug / LKW (Schwerlast):</b> Übernimmt den Transport von den Minen zu den Häfen und Schmelzanlagen.";
 
             renderDetails(`Rohstoff: ${mineral}`, [
                 { title: "Verwendet in Smartphone-Bauteilen", content: generateTags(usedInComps, 'component', 'Keine Bauteile erfasst.') },
