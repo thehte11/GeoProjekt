@@ -9,84 +9,6 @@
     
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
-        /* --- ZUGANGSCODE OVERLAY --- */
-        #access-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: #2c3e50; /* Dunkler Hintergrund */
-            z-index: 99999999; /* Über allem anderen */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
-        }
-
-        .access-box {
-            background: #ffffff;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            text-align: center;
-            max-width: 350px;
-            width: 90%;
-        }
-
-        .access-box h2 {
-            margin-top: 0;
-            color: #2c3e50;
-            font-size: 1.5em;
-        }
-
-        .access-box p {
-            color: #7f8c8d;
-            margin-bottom: 20px;
-            font-size: 0.9em;
-        }
-
-        .access-box input {
-            width: 100%;
-            padding: 12px 15px;
-            margin-bottom: 15px;
-            border: 2px solid #bdc3c7;
-            border-radius: 6px;
-            font-size: 16px;
-            box-sizing: border-box;
-            outline: none;
-            transition: border-color 0.3s ease;
-        }
-
-        .access-box input:focus {
-            border-color: #3498db;
-        }
-
-        .access-box button {
-            width: 100%;
-            padding: 12px;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .access-box button:hover {
-            background-color: #2980b9;
-        }
-
-        #access-error {
-            color: #e74c3c;
-            font-size: 0.9em;
-            margin-top: 15px;
-            display: none;
-            font-weight: bold;
-        }
-
         /* --- ORIGINALES GRUND-DESIGN --- */
         body {
             font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
@@ -267,16 +189,6 @@
 </head>
 <body>
 
-    <div id="access-overlay">
-        <div class="access-box">
-            <h2>Gesperrt</h2>
-            <p>Bitte gib das Passwort ein, um die Karte der Lieferketten zu entsperren.</p>
-            <input type="password" id="access-code-input" placeholder="Passwort eingeben..." autocomplete="off">
-            <button id="access-btn">Entsperren</button>
-            <p id="access-error">Zugriff verweigert. Falscher Code.</p>
-        </div>
-    </div>
-
     <div id="map-container">
         <div id="map-canvas"></div>
         
@@ -316,31 +228,14 @@
             erstellt von:<br>
             - Theo Eckert<br>
             - Alexej Schreiner<br><br>
-            Open source Karte:<br>
-            <a href="https://d3js.org/d3.v7.min.js" target="_blank">https://d3js.org/d3.v7.min.js</a><br><br>
+            Open Source Karte:<br>
+            <a href="https://d3js.org/d3.v7.min.js" target="_blank">https://d3js.org/d3.v7.min.js</a><br>
+	<a href="https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson" target="_blank"> https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson</a><br><br>
             Email: <a href="mailto:eckertt274@gmail.com">eckertt274@gmail.com</a>
         </div>
     </div>
 
     <script>
-// --- ZUGANGS-LOGIK ---
-function checkAccessCode() {
-    const inputVal = document.getElementById("access-code-input").value;
-    
-    // Wandelt die Eingabe in Kleinbuchstaben um – so klappt "geo", "Geo", "GEO" etc. automatisch!
-    if (inputVal.toLowerCase() === "geo") {
-        document.getElementById("access-overlay").style.display = "none";
-    } else {
-        document.getElementById("access-error").style.display = "block";
-    }
-}
-        document.getElementById("access-btn").addEventListener("click", checkAccessCode);
-        document.getElementById("access-code-input").addEventListener("keypress", function(e) {
-            if (e.key === "Enter") {
-                checkAccessCode();
-            }
-        });
-
         // --- Klick-Bugfix: Verhindert, dass die Map Klicks auf das Suchfeld stiehlt ---
         const searchInput = document.getElementById("country-search");
         ['mousedown', 'mouseup', 'click', 'touchstart', 'touchend', 'pointerdown', 'pointerup', 'keydown', 'keyup', 'keypress'].forEach(evt => {
