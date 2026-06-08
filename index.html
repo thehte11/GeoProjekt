@@ -228,8 +228,8 @@
             erstellt von:<br>
             - Theo Eckert<br>
             - Alexej Schreiner<br><br>
-            Open source:<br>
-            Karte: <a href="https://d3js.org/d3.v7.min.js" target="_blank">https://d3js.org/d3.v7.min.js</a><br><br>
+            Open Source Karte:<br>
+            <a href="https://d3js.org/d3.v7.min.js" target="_blank">https://d3js.org/d3.v7.min.js</a><br><br>
             Email: <a href="mailto:eckertt274@gmail.com">eckertt274@gmail.com</a>
         </div>
     </div>
