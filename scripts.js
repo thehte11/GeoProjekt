@@ -859,7 +859,7 @@
             });
 
         }).catch(function(error) {
-            document.getElementById("loading").innerText = "❌ Fehler: Keine Internetverbindung oder Datenquelle nicht erreichbar.";
+            document.getElementById("loading").innerText = "Fehler: Keine Internetverbindung oder Datenquelle nicht erreichbar.";
             document.getElementById("loading").style.color = "red";
         });
 
