@@ -229,8 +229,8 @@
             - Theo Eckert<br>
             - Alexej Schreiner<br><br>
             Open Source Karte:<br>
-            <a href="https://d3js.org/d3.v7.min.js" target="_blank">https://d3js.org/d3.v7.min.js</a><br>
-	<a href="https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson" target="_blank"> https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson</a><br><br>
+	GitHub Karte: <a href="https://github.com/holtzy/D3-graph-gallery" target="_blank">https://github.com/holtzy/D3-graph-gallery</a><br>
+            D3 Datenbank: <a href="https://d3js.org/d3.v7.min.js" target="_blank">https://d3js.org/d3.v7.min.js</a><br><br>
             Email: <a href="mailto:eckertt274@gmail.com">eckertt274@gmail.com</a>
         </div>
     </div>
