@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
     <title>Die globale Smartphone-Lieferkette</title>
-   
+    
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         /* --- ORIGINALES GRUND-DESIGN --- */
@@ -117,6 +117,8 @@
             box-shadow: -5px 0 15px rgba(0,0,0,0.1); overflow-y: auto;
             min-width: 380px; max-width: 450px; box-sizing: border-box;
             position: relative; z-index: 10000; 
+            display: flex; /* Flexbox hinzugefügt für Layout */
+            flex-direction: column; /* Flex-Richtung */
         }
 
         h1 { font-size: 1.6em; color: #2c3e50; margin-top: 0; margin-bottom: 20px; }
@@ -155,6 +157,22 @@
             font-size: 14px; opacity: 0; transition: opacity 0.2s; font-weight: bold; z-index: 20000;
         }
 
+        /* --- Impressum Styling --- */
+        #impressum {
+            margin-top: auto; /* Drückt das Impressum nach unten */
+            padding-top: 30px;
+            font-size: 0.85em;
+            color: #7f8c8d;
+            line-height: 1.6;
+        }
+        #impressum a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        #impressum a:hover {
+            text-decoration: underline;
+        }
+
         @media (max-width: 768px) {
             body { flex-direction: column; height: auto; overflow: auto; }
             #map-container { flex: none; height: 40vh; width: 100%; }
@@ -165,6 +183,7 @@
             #country-search { width: 100%; box-sizing: border-box; }
             #country-search:focus { width: 100%; }
             #default-legend, #map-legend { bottom: 10px; left: 10px; font-size: 12px; padding: 8px; }
+            #impressum { padding-top: 20px; padding-bottom: 20px; }
         }
     </style>
 </head>
@@ -203,6 +222,16 @@
         <div id="search-results"></div>
 
         <div id="country-details" class="info-section"></div>
+
+        <div id="impressum">
+            <strong>Impressum:</strong><br><br>
+            erstellt von:<br>
+            - Theo Eckert<br>
+            - Alexej Schreiner<br><br>
+            Open source:<br>
+            Karte: <a href="https://d3js.org/d3.v7.min.js" target="_blank">https://d3js.org/d3.v7.min.js</a><br><br>
+            Email: <a href="mailto:eckertt274@gmail.com">eckertt274@gmail.com</a>
+        </div>
     </div>
 
     <script>
