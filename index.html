@@ -231,7 +231,7 @@
             Open Source Karte:<br>
 	GitHub Karte: <a href="https://github.com/holtzy/D3-graph-gallery" target="_blank">https://github.com/holtzy/D3-graph-gallery</a><br>
             D3 Datenbank: <a href="https://d3js.org/d3.v7.min.js" target="_blank">https://d3js.org/d3.v7.min.js</a><br><br>
-            Email: <a href="mailto:eckertt274@gmail.com">eckertt274@gmail.com</a>
+            Email: <a href="mailto:Geo.projekt1@emailn.de">Geo.projekt1@emailn.de</a>
         </div>
     </div>
 
