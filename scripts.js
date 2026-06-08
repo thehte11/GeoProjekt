@@ -213,7 +213,7 @@
     </div>
 
     <div id="info-panel">
-        <h1>Die globale Smartphone-Lieferkette</h1>
+        <h1>Schul-Projekt: Die globale Smartphone-Lieferkette</h1>
         
         <div id="default-message">
             Klicke auf ein Land oder suche nach Bauteilen/Rohstoffen, um die echten, weltweiten Transportwege der Logistikbranche zu analysieren.
