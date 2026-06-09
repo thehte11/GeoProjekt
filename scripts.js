@@ -4,30 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Die globale Smartphone-Lieferkette</title>
+    
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    
     <style>
-        /* --- OPTIMIERTES CSS (CSS-Variablen für Performance & Wartung) --- */
-        :root {
-            --bg-body: #f4f7f6;
-            --bg-map: #aadaff;
-            --primary: #3498db;
-            --primary-hover: #2980b9;
-            --secondary: #40BBFF;
-            --text-dark: #2c3e50;
-            --text-light: #7f8c8d;
-            --highlight-mining: #e67e22;
-            --highlight-mfg: #9b59b6;
-            --highlight-both: #e74c3c;
-            --highlight-country: #f1c40f;
-            --white: #ffffff;
-            --border-light: #bdc3c7;
-        }
-
+        /* --- ORIGINALES GRUND-DESIGN --- */
         body {
             font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: var(--bg-body);
+            background-color: #f4f7f6;
             display: flex;
             height: 100vh;
             height: 100dvh;
@@ -36,16 +23,48 @@
             overscroll-behavior: none;
         }
 
+        /* --- AUTHENTIFIZIERUNGS-OVERLAY --- */
+        #auth-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(44, 62, 80, 0.9); backdrop-filter: blur(8px);
+            z-index: 99999999; display: flex; justify-content: center; align-items: center;
+        }
+        .auth-container {
+            background: #ffffff; padding: 40px; border-radius: 12px;
+            width: 350px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center;
+        }
+        .auth-container h2 { margin-top: 0; color: #2c3e50; }
+        .auth-container input {
+            width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #bdc3c7;
+            border-radius: 6px; box-sizing: border-box; font-family: inherit; font-size: 15px; outline: none;
+        }
+        .auth-container input:focus { border-color: #3498db; }
+        .auth-btn {
+            width: 100%; padding: 12px; margin-top: 10px; background: #3498db;
+            color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px; transition: background 0.2s;
+        }
+        .auth-btn:hover { background: #2980b9; }
+        .auth-btn-guest { background: #95a5a6; margin-top: 15px; }
+        .auth-btn-guest:hover { background: #7f8c8d; }
+        .auth-switch { margin-top: 15px; font-size: 14px; color: #7f8c8d; cursor: pointer; }
+        .auth-switch:hover { color: #3498db; text-decoration: underline; }
+        .auth-message { margin-top: 10px; font-size: 14px; color: #e74c3c; font-weight: bold; min-height: 20px;}
+        .verify-box { display: none; margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px; }
+
+        /* --- MAP LAYOUT --- */
         #map-container {
             flex: 2;
-            background-color: var(--bg-map);
+            background-color: #aadaff;
             position: relative;
             cursor: grab;
             overflow: hidden; 
         }
 
-        #map-container:active { cursor: grabbing; }
+        #map-container:active {
+            cursor: grabbing;
+        }
 
+        /* SVG Canvas liegt strikt im Hintergrund */
         #map-canvas {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -56,7 +75,7 @@
         #loading {
             position: absolute;
             top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 1.5rem; color: var(--text-dark);
+            font-size: 1.5rem; color: #2c3e50;
             background: rgba(255, 255, 255, 0.9);
             padding: 10px 20px; border-radius: 8px; font-weight: bold;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
@@ -64,15 +83,17 @@
             z-index: 2000;
         }
 
+        /* Suchfeld */
         #search-container {
             position: absolute;
-            top: 20px; left: 20px;
+            top: 20px;
+            left: 20px;
             z-index: 999999;
             pointer-events: auto !important;
         }
 
         #country-search {
-            padding: 12px 15px; font-size: 16px; border: 2px solid var(--primary);
+            padding: 12px 15px; font-size: 16px; border: 2px solid #3498db;
             border-radius: 25px; outline: none; box-shadow: 0 4px 10px rgba(0,0,0,0.15);
             width: 260px; transition: width 0.3s ease, box-shadow 0.3s ease;
             font-family: inherit;
@@ -83,87 +104,114 @@
             background: rgba(255, 255, 255, 0.95);
         }
         #country-search:focus {
-            width: 320px; box-shadow: 0 6px 14px rgba(0,0,0,0.25); border-color: var(--primary-hover);
-            background: var(--white);
+            width: 320px; box-shadow: 0 6px 14px rgba(0,0,0,0.25); border-color: #2980b9;
+            background: #ffffff;
         }
 
         #default-legend, #map-legend {
             position: absolute;
-            bottom: 20px; left: 20px;
+            bottom: 20px;
+            left: 20px;
             background: rgba(255, 255, 255, 0.9);
-            padding: 12px 18px; border-radius: 8px;
+            padding: 12px 18px;
+            border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-            font-size: 14px; z-index: 100;
+            font-size: 14px;
+            z-index: 100;
         }
         #map-legend { display: none; }
 
-        .legend-item { display: flex; align-items: center; margin-bottom: 6px; color: var(--text-dark); font-weight: bold; }
+        .legend-item { display: flex; align-items: center; margin-bottom: 6px; color: #2c3e50; font-weight: bold; }
         .legend-item:last-child { margin-bottom: 0; }
-        .legend-color { width: 18px; height: 18px; border-radius: 4px; margin-right: 10px; display: inline-block; border: 1px solid var(--border-light); }
+        .legend-color { width: 18px; height: 18px; border-radius: 4px; margin-right: 10px; display: inline-block; border: 1px solid #bdc3c7; }
 
         /* --- MAP COUNTRIES --- */
-        .country { stroke: var(--border-light); stroke-width: 0.5px; transition: fill 0.2s ease, stroke-width 0.2s ease; cursor: pointer; }
+        .country { stroke: #bdc3c7; stroke-width: 0.5px; transition: fill 0.2s ease, stroke-width 0.2s ease; cursor: pointer; }
 
-        .country.role-major { fill: var(--primary); }
-        .country.role-minor { fill: var(--secondary); }
+        .country.role-major { fill: #3498db; }
+        .country.role-minor { fill: #40BBFF; }
         .country.role-none { fill: #ecf0f1; }
 
-        .highlighted-country { fill: var(--highlight-country) !important; stroke: var(--white) !important; stroke-width: 2.5px !important; }
-        .highlighted-mining { fill: var(--highlight-mining) !important; stroke: var(--white) !important; stroke-width: 2.5px !important; }
-        .highlighted-manufacturing { fill: var(--highlight-mfg) !important; stroke: var(--white) !important; stroke-width: 2.5px !important; }
-        .highlighted-both { fill: var(--highlight-both) !important; stroke: var(--white) !important; stroke-width: 2.5px !important; }
+        .highlighted-country { fill: #f1c40f !important; stroke: #ffffff !important; stroke-width: 2.5px !important; }
+        .highlighted-mining { fill: #e67e22 !important; stroke: #ffffff !important; stroke-width: 2.5px !important; }
+        .highlighted-manufacturing { fill: #9b59b6 !important; stroke: #ffffff !important; stroke-width: 2.5px !important; }
+        .highlighted-both { fill: #e74c3c !important; stroke: #ffffff !important; stroke-width: 2.5px !important; }
 
-        .country.role-major:hover, .country.role-minor:hover { fill: var(--highlight-both) !important; stroke: var(--white); stroke-width: 2.5px; }
-        .country.role-none:hover { fill: #d5dbdb !important; stroke: var(--white); stroke-width: 1.5px; }
+        .country.role-major:hover, .country.role-minor:hover { fill: #e74c3c !important; stroke: #ffffff; stroke-width: 2.5px; }
+        .country.role-none:hover { fill: #d5dbdb !important; stroke: #ffffff; stroke-width: 1.5px; }
 
         /* --- Info Panel --- */
         #info-panel {
-            flex: 1; background-color: var(--white); padding: 30px;
+            flex: 1; background-color: #ffffff; padding: 30px;
             box-shadow: -5px 0 15px rgba(0,0,0,0.1); overflow-y: auto;
             min-width: 380px; max-width: 450px; box-sizing: border-box;
             position: relative; z-index: 10000; 
-            display: flex; flex-direction: column;
+            display: flex; /* Flexbox hinzugefügt für Layout */
+            flex-direction: column; /* Flex-Richtung */
         }
 
-        h1 { font-size: 1.6em; color: var(--text-dark); margin-top: 0; margin-bottom: 20px; }
+        h1 { font-size: 1.6em; color: #2c3e50; margin-top: 0; margin-bottom: 15px; }
+        
+        /* Auth Bar oben im Panel */
+        #auth-status-bar {
+            display: flex; justify-content: space-between; align-items: center; 
+            margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee;
+        }
+        #user-greeting { color: #3498db; font-weight: bold; margin: 0; font-size: 0.9em; }
+
         .info-section { display: none; margin-top: 25px; }
         
-        #default-message { color: var(--text-light); font-style: italic; margin-top: 20px; background: #fdf2f0; padding: 15px; border-radius: 5px;}
+        #default-message { color: #7f8c8d; font-style: italic; margin-top: 10px; background: #fdf2f0; padding: 15px; border-radius: 5px;}
 
         #search-results { display: none; margin-top: 20px; }
-        #search-results h3 { color: var(--text-dark); font-size: 1.2em; margin-bottom: 10px; }
+        #search-results h3 { color: #2c3e50; font-size: 1.2em; margin-bottom: 10px; }
         .search-result-item {
             padding: 12px 15px; margin-bottom: 8px; background-color: #f9f9f9;
             border: 1px solid #e0e0e0; border-radius: 5px; cursor: pointer;
-            transition: all 0.2s ease; font-size: 14px; color: var(--text-dark);
+            transition: all 0.2s ease; font-size: 14px; color: #2c3e50;
         }
-        .search-result-item:hover { background-color: #eaf2f8; border-color: var(--border-light); }
-        .search-result-item.result-land { border-left: 5px solid var(--primary); }
-        .search-result-item.result-bauteil { border-left: 5px solid var(--highlight-mfg); }
-        .search-result-item.result-rohstoff { border-left: 5px solid var(--highlight-mining); }
+        .search-result-item:hover { background-color: #eaf2f8; border-color: #bdc3c7; }
+        .search-result-item.result-land { border-left: 5px solid #3498db; }
+        .search-result-item.result-bauteil { border-left: 5px solid #9b59b6; }
+        .search-result-item.result-rohstoff { border-left: 5px solid #e67e22; }
 
-        .search-type-label { font-size: 0.8em; color: var(--text-light); text-transform: uppercase; font-weight: bold; margin-bottom: 3px; }
+        .search-type-label { font-size: 0.8em; color: #7f8c8d; text-transform: uppercase; font-weight: bold; margin-bottom: 3px; }
 
         .clickable-tag {
-            display: inline-block; background-color: #eaf2f8; color: var(--primary-hover);
+            display: inline-block; background-color: #eaf2f8; color: #2980b9;
             padding: 5px 12px; margin: 4px 6px 4px 0; border-radius: 20px;
             font-size: 0.9em; cursor: pointer; transition: all 0.2s ease;
             border: 1px solid #a9cce3; font-weight: 500;
         }
-        .clickable-tag:hover { background-color: var(--primary); color: var(--white); border-color: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .clickable-tag:hover { background-color: #3498db; color: #ffffff; border-color: #2980b9; transform: translateY(-1px); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
-        .text-link-tag { background-color: #eaf2f8; color: var(--primary-hover); padding: 2px 5px; border-radius: 4px; cursor: pointer; transition: all 0.2s ease; border: 1px solid #a9cce3; font-weight: 600; white-space: nowrap; }
-        .text-link-tag:hover { background-color: var(--primary); color: var(--white); border-color: var(--primary-hover); }
+        .text-link-tag { background-color: #eaf2f8; color: #2980b9; padding: 2px 5px; border-radius: 4px; cursor: pointer; transition: all 0.2s ease; border: 1px solid #a9cce3; font-weight: 600; white-space: nowrap; }
+        .text-link-tag:hover { background-color: #3498db; color: #ffffff; border-color: #2980b9; }
+
+        /* Bookmark & Notizen */
+        .bookmark-btn { font-size: 1.2em; cursor: pointer; transition: transform 0.2s; user-select: none; }
+        .bookmark-btn:hover { transform: scale(1.2); }
+        #collection-btn {
+            background: #f1c40f; color: #2c3e50; border: none; padding: 10px; border-radius: 6px;
+            font-weight: bold; cursor: pointer; margin-bottom: 15px; font-size: 15px; display: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 100%;
+        }
+        #collection-btn:hover { background: #f39c12; }
 
         #tooltip {
-            position: absolute; background: rgba(44, 62, 80, 0.9); color: var(--white);
+            position: absolute; background: rgba(44, 62, 80, 0.9); color: white;
             padding: 6px 12px; border-radius: 4px; pointer-events: none;
             font-size: 14px; opacity: 0; transition: opacity 0.2s; font-weight: bold; z-index: 20000;
         }
 
         /* --- Impressum Styling --- */
-        #impressum { margin-top: auto; padding-top: 30px; font-size: 0.85em; color: var(--text-light); line-height: 1.6; }
-        #impressum a { color: var(--primary); text-decoration: none; }
+        #impressum {
+            margin-top: auto; /* Drückt das Impressum nach unten */
+            padding-top: 30px;
+            font-size: 0.85em;
+            color: #7f8c8d;
+            line-height: 1.6;
+        }
+        #impressum a { color: #3498db; text-decoration: none; }
         #impressum a:hover { text-decoration: underline; }
 
         @media (max-width: 768px) {
@@ -182,6 +230,38 @@
 </head>
 <body>
 
+    <div id="auth-overlay">
+        <div class="auth-container" id="login-box">
+            <h2>Projekt Login</h2>
+            <input type="email" id="login-email" placeholder="E-Mail Adresse">
+            <input type="password" id="login-pass" placeholder="Passwort">
+            <button class="auth-btn" id="btn-login">Anmelden</button>
+            <button class="auth-btn auth-btn-guest" onclick="continueAsGuest()">Ohne Anmeldung als Gast nutzen</button>
+            <div class="auth-message" id="login-msg"></div>
+            <div class="auth-switch" onclick="toggleAuth(true)">Noch keinen Account? Registrieren.</div>
+        </div>
+
+        <div class="auth-container" id="register-box" style="display: none;">
+            <h2>Registrierung</h2>
+            <p style="font-size: 12px; color: #7f8c8d;">Ein Account wird benötigt, um dauerhaft Notizen und Lesezeichen zu speichern.</p>
+            <div id="reg-inputs">
+                <input type="text" id="reg-vorname" placeholder="Vorname">
+                <input type="email" id="reg-email" placeholder="E-Mail Adresse">
+                <input type="password" id="reg-pass" placeholder="Passwort (min. 6 Zeichen)">
+                <button class="auth-btn" id="btn-register">Code senden & Registrieren</button>
+            </div>
+            
+            <div class="verify-box" id="verify-box">
+                <p style="font-size: 14px; color: #27ae60;">Ein Code wurde an deine E-Mail gesendet!</p>
+                <input type="text" id="verify-code-input" placeholder="6-stelliger Code eingeben">
+                <button class="auth-btn" id="btn-verify">Bestätigen</button>
+            </div>
+
+            <div class="auth-message" id="reg-msg"></div>
+            <div class="auth-switch" onclick="toggleAuth(false)">Bereits registriert? Anmelden.</div>
+        </div>
+    </div>
+
     <div id="map-container">
         <div id="map-canvas"></div>
         
@@ -190,15 +270,15 @@
         </div>
         
         <div id="default-legend">
-            <div class="legend-item"><span class="legend-color" style="background: var(--primary);"></span> Hauptakteur (Detaillierte Infos)</div>
-            <div class="legend-item"><span class="legend-color" style="background: var(--secondary);"></span> Beteiligt (Liefert Rohstoffe/Bauteile)</div>
+            <div class="legend-item"><span class="legend-color" style="background: #3498db;"></span> Hauptakteur (Detaillierte Infos)</div>
+            <div class="legend-item"><span class="legend-color" style="background: #40BBFF;"></span> Beteiligt (Liefert Rohstoffe/Bauteile)</div>
             <div class="legend-item"><span class="legend-color" style="background: #ecf0f1;"></span> Keine erfasste Rolle</div>
         </div>
 
         <div id="map-legend">
-            <div class="legend-item"><span class="legend-color" style="background: var(--highlight-mining);"></span> Rohstoff-Abbau (Fördern)</div>
-            <div class="legend-item"><span class="legend-color" style="background: var(--highlight-mfg);"></span> Verarbeitung & Montage</div>
-            <div class="legend-item"><span class="legend-color" style="background: var(--highlight-both);"></span> Beides (Abbau & Montage)</div>
+            <div class="legend-item"><span class="legend-color" style="background: #e67e22;"></span> Rohstoff-Abbau (Fördern)</div>
+            <div class="legend-item"><span class="legend-color" style="background: #9b59b6;"></span> Verarbeitung & Montage</div>
+            <div class="legend-item"><span class="legend-color" style="background: #e74c3c;"></span> Beides (Abbau & Montage)</div>
         </div>
 
         <div id="loading">Lade Weltkarte...</div>
@@ -206,13 +286,22 @@
     </div>
 
     <div id="info-panel">
+        <div id="auth-status-bar">
+            <span id="user-greeting">Gastmodus (Notizen deaktiviert)</span>
+            <button id="top-login-btn" class="auth-btn" style="width: auto; padding: 6px 12px; margin: 0; display: none;" onclick="location.reload()">Login</button>
+            <button id="top-logout-btn" class="auth-btn" style="width: auto; padding: 6px 12px; margin: 0; background: #e74c3c; display: none;" onclick="window.logout()">Logout</button>
+        </div>
+
         <h1>Schul-Projekt: Die globale Smartphone-Lieferkette</h1>
+        
+        <button id="collection-btn">⭐ Meine Sammlung & Notizen</button>
         
         <div id="default-message">
             Klicke auf ein Land oder suche nach Bauteilen/Rohstoffen, um die echten, weltweiten Transportwege der Logistikbranche zu analysieren.
         </div>
 
         <div id="search-results"></div>
+
         <div id="country-details" class="info-section"></div>
 
         <div id="impressum">
@@ -227,24 +316,207 @@
         </div>
     </div>
 
-    <script>
-        // --- PERFORMANCE OPTIMIERUNG: DOM Caching ---
-        const els = {
-            search: document.getElementById("country-search"),
-            mapLegend: document.getElementById("map-legend"),
-            defaultLegend: document.getElementById("default-legend"),
-            searchResults: document.getElementById("search-results"),
-            countryDetails: document.getElementById("country-details"),
-            defaultMessage: document.getElementById("default-message"),
-            loading: document.getElementById("loading")
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+        // FIREBASE PROJEKT: geo-projekt-b86e7
+        const firebaseConfig = {
+            apiKey: "AIzaSyBwiYRYB0MZ1-SUTtdETCphTTDV_LIW4Vw",
+            authDomain: "geo-projekt-b86e7.firebaseapp.com",
+            projectId: "geo-projekt-b86e7",
+            storageBucket: "geo-projekt-b86e7.firebasestorage.app",
+            messagingSenderId: "301168135427",
+            appId: "1:301168135427:web:c75de2c8f051dbf3bcad36"
         };
 
-        // Klick-Bugfix
-        ['mousedown', 'mouseup', 'click', 'touchstart', 'touchend', 'pointerdown', 'pointerup', 'keydown', 'keyup', 'keypress'].forEach(evt => {
-            els.search.addEventListener(evt, (e) => e.stopPropagation());
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // EMAILJS DATEN
+        emailjs.init("nopyo_6xb4xN_cWdW");
+        const EMAILJS_SERVICE_ID = "service_u23gqgg";
+        const EMAILJS_TEMPLATE_ID = "template_i3ekbea";
+
+        window.currentUser = null;
+        window.userData = { notes: {}, bookmarks: [] };
+        let generatedCode = null;
+
+        // DATENBANK FUNKTIONEN
+        async function loadUserData(uid) {
+            try {
+                const docRef = doc(db, "users", uid);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    window.userData = docSnap.data();
+                    if(!window.userData.bookmarks) window.userData.bookmarks = [];
+                    if(!window.userData.notes || typeof window.userData.notes !== "object") window.userData.notes = {};
+                } else {
+                    await setDoc(docRef, window.userData); 
+                }
+            } catch (e) { console.error("Datenbank-Fehler:", e); }
+        }
+
+        window.saveUserData = async () => {
+            if(!window.currentUser) return;
+            try {
+                await setDoc(doc(db, "users", window.currentUser.uid), window.userData);
+            } catch(e) { console.error("Speichern fehlgeschlagen", e); }
+        }
+
+        // LOGIN / REGISTRIERUNG LOGIK
+        window.toggleAuth = (showReg) => {
+            document.getElementById('login-box').style.display = showReg ? 'none' : 'block';
+            document.getElementById('register-box').style.display = showReg ? 'block' : 'none';
+        };
+
+        document.getElementById('btn-register').onclick = () => {
+            const email = document.getElementById('reg-email').value;
+            const pw = document.getElementById('reg-pass').value;
+            const vorname = document.getElementById('reg-vorname').value;
+
+            if(!vorname || email.length < 5 || pw.length < 6) return document.getElementById('reg-msg').innerText = "Bitte alle Felder korrekt ausfüllen (PW min. 6 Zeichen).";
+
+            generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
+            document.getElementById('reg-msg').style.color = "#2c3e50";
+            document.getElementById('reg-msg').innerText = "Sende E-Mail... Bitte warten.";
+
+            emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, { vorname: vorname, email: email, code: generatedCode })
+            .then(() => {
+                document.getElementById('reg-inputs').style.display = 'none';
+                document.getElementById('verify-box').style.display = 'block';
+                document.getElementById('reg-msg').innerText = "";
+            }).catch((err) => { 
+                document.getElementById('reg-msg').style.color = "#e74c3c";
+                document.getElementById('reg-msg').innerText = "E-Mail Fehler! Bitte überprüfe die Konsole."; 
+                console.error(err);
+            });
+        };
+
+        document.getElementById('btn-verify').onclick = async () => {
+            if(document.getElementById('verify-code-input').value !== generatedCode) {
+                document.getElementById('reg-msg').style.color = "#e74c3c";
+                return document.getElementById('reg-msg').innerText = "Falscher Code!";
+            }
+            try {
+                const email = document.getElementById('reg-email').value;
+                const pw = document.getElementById('reg-pass').value;
+                const vorname = document.getElementById('reg-vorname').value;
+                const userCred = await createUserWithEmailAndPassword(auth, email, pw);
+                await updateProfile(userCred.user, { displayName: vorname });
+                location.reload(); 
+            } catch (e) { document.getElementById('reg-msg').innerText = "Fehler: " + e.message; }
+        };
+
+        document.getElementById('btn-login').onclick = () => {
+            signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-pass').value)
+            .catch(() => { document.getElementById('login-msg').innerText = "Login fehlgeschlagen. Daten prüfen."; });
+        };
+
+        window.logout = () => signOut(auth);
+
+        window.continueAsGuest = () => {
+            document.getElementById('auth-overlay').style.display = 'none';
+            document.getElementById('user-greeting').innerText = "Gastmodus (Notizen deaktiviert)";
+            document.getElementById('top-login-btn').style.display = 'block';
+            document.getElementById('top-logout-btn').style.display = 'none';
+            document.getElementById('collection-btn').style.display = 'none';
+            window.currentUser = null;
+        };
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                window.currentUser = user;
+                await loadUserData(user.uid); 
+                document.getElementById('auth-overlay').style.display = 'none';
+                document.getElementById('user-greeting').innerText = "Eingeloggt als: " + (user.displayName || "Nutzer");
+                document.getElementById('top-login-btn').style.display = 'none';
+                document.getElementById('top-logout-btn').style.display = 'block';
+                document.getElementById('collection-btn').style.display = 'block'; 
+            } else {
+                window.currentUser = null;
+                document.getElementById('auth-overlay').style.display = 'flex';
+            }
         });
 
-        // --- DATEN-STRUKTUREN ---
+        // NOTIZEN SPEICHERN FÜR EINZELNE ELEMENTE
+        window.saveItemNote = async (title) => {
+            if (!window.currentUser) return alert("Nur für angemeldete Nutzer verfügbar!");
+            if (typeof window.userData.notes !== "object") window.userData.notes = {};
+            const safeTitle = title.replace(/[^a-zA-Z0-9]/g, '-');
+            window.userData.notes[title] = document.getElementById(`note-${safeTitle}`).value;
+            await window.saveUserData();
+            document.getElementById(`msg-${safeTitle}`).innerText = "Gespeichert!";
+            setTimeout(() => document.getElementById(`msg-${safeTitle}`).innerText = "", 2000);
+        };
+
+        // LESEZEICHEN TOGGLE
+        window.toggleBookmark = async (title) => {
+            if(!window.currentUser) return alert("Nur für angemeldete Nutzer verfügbar!");
+            const isBookmarked = window.userData.bookmarks.includes(title);
+            if(isBookmarked) window.userData.bookmarks = window.userData.bookmarks.filter(b => b !== title);
+            else window.userData.bookmarks.push(title);
+            await window.saveUserData();
+            document.getElementById('btn-star').innerText = isBookmarked ? '☆' : '⭐';
+        };
+
+        // SAMMLUNG ANZEIGEN
+        document.getElementById('collection-btn').onclick = () => {
+            if(typeof window.clearMapAndUI === "function") window.clearMapAndUI();
+            const container = document.getElementById("country-details");
+            container.style.display = "block";
+            
+            let html = `<h2 style="color: #f39c12; margin-bottom: 5px;">⭐ Meine Sammlung</h2>`;
+            
+            html += `<h3 style="color: #2980b9; margin-top:20px; border-bottom: 2px solid #eee; padding-bottom: 5px;">Meine Notizen</h3>`;
+            if (typeof window.userData.notes !== 'object' || Object.keys(window.userData.notes).length === 0) {
+                html += `<p style="color:#7f8c8d; font-style:italic;">Keine Notizen vorhanden. Klicke auf ein Land oder Bauteil, um dort eine Notiz zu schreiben.</p>`;
+            } else {
+                let hasNotes = false;
+                for (const [itemTitle, note] of Object.entries(window.userData.notes)) {
+                    if (note && note.trim() !== "") {
+                        hasNotes = true;
+                        let type = 'country'; let cleanName = itemTitle;
+                        if(itemTitle.startsWith("Bauteil: ")) { type = 'component'; cleanName = itemTitle.replace("Bauteil: ", ""); }
+                        else if(itemTitle.startsWith("Rohstoff: ")) { type = 'mineral'; cleanName = itemTitle.replace("Rohstoff: ", ""); }
+                        else if(itemTitle.startsWith("Land: ")) { cleanName = itemTitle.replace("Land: ", ""); }
+
+                        html += `<div style="margin-bottom: 15px; padding: 12px; border-left: 4px solid #f1c40f; background: #fdf2f0; border-radius: 4px;">
+                            <strong style="color: #e67e22; cursor: pointer; text-decoration: underline;" onclick="window.handleTagClick('${type}', '${cleanName.replace(/'/g, "\\'")}')">${itemTitle}</strong>
+                            <p style="margin: 8px 0 0 0; white-space: pre-wrap; font-size: 14px; color: #2c3e50;">${note}</p>
+                        </div>`;
+                    }
+                }
+                if(!hasNotes) html += `<p style="color:#7f8c8d; font-style:italic;">Keine Notizen vorhanden.</p>`;
+            }
+
+            html += `<h3 style="color: #2980b9; margin-top:30px; border-bottom: 2px solid #eee; padding-bottom: 5px;">Markierte Einträge</h3>`;
+            if(window.userData.bookmarks.length === 0) {
+                html += `<p style="color:#7f8c8d; font-style:italic;">Du hast noch keine Einträge markiert. Klicke bei einem Eintrag auf den Stern (☆).</p>`;
+            } else {
+                html += window.userData.bookmarks.map(b => {
+                    const parts = b.split(": ");
+                    if(parts.length < 2) return `<span class="clickable-tag" onclick="window.handleTagClick('country', '${b.replace(/'/g, "\\'")}')">${b}</span>`;
+                    let type = 'country'; if(parts[0] === 'Bauteil') type = 'component'; else if(parts[0] === 'Rohstoff') type = 'mineral';
+                    return `<span class="clickable-tag" onclick="window.handleTagClick('${type}', '${parts[1].replace(/'/g, "\\'")}')">${parts[1]} <small>(${parts[0]})</small></span>`;
+                }).join(" ");
+            }
+            container.innerHTML = html;
+        };
+    </script>
+
+    <script>
+        // --- Klick-Bugfix: Verhindert, dass die Map Klicks auf das Suchfeld stiehlt ---
+        const searchInputObj = document.getElementById("country-search");
+        ['mousedown', 'mouseup', 'click', 'touchstart', 'touchend', 'pointerdown', 'pointerup', 'keydown', 'keyup', 'keypress'].forEach(evt => {
+            searchInputObj.addEventListener(evt, (e) => e.stopPropagation());
+        });
+
+        let countryCentroids = {};
+
+        // Wörterbuch für die Übersetzung von GeoJSON (Englisch) zu Deutsch
         const countryTranslations = {
             "Afghanistan": "Afghanistan", "Albania": "Albanien", "Algeria": "Algerien", "Angola": "Angola", "Antarctica": "Antarktis", "Argentina": "Argentinien", "Armenia": "Armenien", "Australia": "Australien", "Austria": "Österreich", "Azerbaijan": "Aserbaidschan",
             "Bahamas": "Bahamas", "Bangladesh": "Bangladesch", "Belarus": "Belarus", "Belgium": "Belgien", "Belize": "Belize", "Benin": "Benin", "Bhutan": "Bhutan", "Bolivia": "Bolivien", "Bosnia and Herz.": "Bosnien und Herzegowina", "Botswana": "Botsuana", "Brazil": "Brasilien", "Brunei": "Brunei", "Bulgaria": "Bulgarien", "Burkina Faso": "Burkina Faso", "Burundi": "Burundi",
@@ -277,42 +549,225 @@
         };
 
         const componentTranslations = {
-            "Smartphone-CPU": ["cpu", "processor", "smartphone cpu"], "Smartphone-GPU": ["gpu", "graphics", "smartphone gpu"], "Smartphone-SoC": ["soc", "system on a chip", "smartphone soc"], "Smartphone-Hauptplatine (PCB)": ["motherboard", "mainboard", "pcb", "printed circuit board"], "Smartphone-NPU": ["npu", "neural processing unit", "smartphone npu"], "LPDDR-RAM": ["ram", "memory"], "NAND-Flash-Speicher": ["nand", "flash memory", "storage"], "OLED-Display-Panel": ["oled", "display", "screen", "panel"], "Smartphone-Digitizer": ["digitizer", "touch screen", "touchscreen"], "LRA (Vibrationsmotor)": ["lra", "vibration motor", "haptic", "motor"], "Lithium-Ionen-Akku": ["battery", "lithium-ion battery", "accumulator"], "PMIC": ["pmic", "power management"], "USB-C-Ladebuchse": ["usb-c", "charging port", "port", "usb"], "Induktionsspule (Wireless Charging)": ["induction coil", "wireless charging", "coil"], "Kameramodul (Sensor-Einheit)": ["camera module", "camera", "sensor"], "MEMS-Gyroskop": ["gyroscope", "gyro"], "MEMS-Beschleunigungssensor": ["accelerometer"], "Annäherungssensor (IR)": ["proximity sensor"], "Umgebungslichtsensor (ALS)": ["ambient light sensor", "als", "light sensor"], "5G-Modem": ["5g modem", "modem", "baseband"], "Antennen-Module": ["antenna", "antenna modules"], "NFC-Chip": ["nfc chip", "nfc"], "MEMS-Mikrofon": ["microphone", "mic"], "Smartphone-Lautsprecher": ["speaker", "loudspeaker"]
+            "Smartphone-CPU": ["cpu", "processor", "smartphone cpu"],
+            "Smartphone-GPU": ["gpu", "graphics", "smartphone gpu"],
+            "Smartphone-SoC": ["soc", "system on a chip", "smartphone soc"],
+            "Smartphone-Hauptplatine (PCB)": ["motherboard", "mainboard", "pcb", "printed circuit board"],
+            "Smartphone-NPU": ["npu", "neural processing unit", "smartphone npu"],
+            "LPDDR-RAM": ["ram", "memory"],
+            "NAND-Flash-Speicher": ["nand", "flash memory", "storage"],
+            "OLED-Display-Panel": ["oled", "display", "screen", "panel"],
+            "Smartphone-Digitizer": ["digitizer", "touch screen", "touchscreen"],
+            "LRA (Vibrationsmotor)": ["lra", "vibration motor", "haptic", "motor"],
+            "Lithium-Ionen-Akku": ["battery", "lithium-ion battery", "accumulator"],
+            "PMIC": ["pmic", "power management"],
+            "USB-C-Ladebuchse": ["usb-c", "charging port", "port", "usb"],
+            "Induktionsspule (Wireless Charging)": ["induction coil", "wireless charging", "coil"],
+            "Kameramodul (Sensor-Einheit)": ["camera module", "camera", "sensor"],
+            "MEMS-Gyroskop": ["gyroscope", "gyro"],
+            "MEMS-Beschleunigungssensor": ["accelerometer"],
+            "Annäherungssensor (IR)": ["proximity sensor"],
+            "Umgebungslichtsensor (ALS)": ["ambient light sensor", "als", "light sensor"],
+            "5G-Modem": ["5g modem", "modem", "baseband"],
+            "Antennen-Module": ["antenna", "antenna modules"],
+            "NFC-Chip": ["nfc chip", "nfc"],
+            "MEMS-Mikrofon": ["microphone", "mic"],
+            "Smartphone-Lautsprecher": ["speaker", "loudspeaker"]
         };
 
         const countryNarratives = {
-            "China": { abbau: "Quarzsand (Silizium & Glasfaser), Phosphaterze, Wolfram (>80%), Gold, Zinn, Silber, Indium", verarbeitung: "Reinstsilizium, Wolfram-Veredelung, Kupferraffination, Tantal, Gold- & Nickel-Raffination, Lotlegierungen, Massenfertigung Kupfer-Heatspreader, Indium-Plättchen", verwendung: "Silizium bildet den Chip (Die). Phosphor dotiert Transistoren. Wolfram bildet interne Kontakte. Gold für Kontaktflächen. Zinn/Silber/Indium für Lötverbindungen und Wärmeübertragung (TIM). Kupfer für den Kühlkörper. Nickel als Unterbeschichtung.", arbeitsbedingungen: "Stark variierende Bedingungen. Während High-Tech-Fabriken moderne Standards aufweisen, gibt es im Bergbau und bei Vorlieferanten oft extrem lange Arbeitszeiten (996-Arbeitskultur) und mangelhaften Gesundheitsschutz. Bei einigen Rohstoffen gibt es wiederholt internationale Vorwürfe von Zwangsarbeit." },
-            "USA": { abbau: "Quarzsand (Silizium & Glasfaser), Bor, Kupfer, Erdöl/Erdgas, Gold", verarbeitung: "Reinstsilizium, Wafer-Fertigung/Chip-Belichtung (Intel), Gase (Bor/Phosphor), Tantal-Veredelung, Indium-Aufbereitung", verwendung: "Silizium für den Hauptchip. Bor/Phosphor zur elektrischen Steuerung der Transistoren. Kupfer/Tantal für Chip-Verdrahtung. Erdöl/Erdgas wird zu Kunstharz für die Trägerplatte (Substrat). Glasfaser stabilisiert das Package.", arbeitsbedingungen: "Strenge Arbeitsgesetze und sehr hohe Sicherheitsstandards in der industriellen Fertigung. In der Halbleiterindustrie arbeiten meist hochqualifizierte, gut bezahlte Spezialisten." },
-            "Deutschland": { abbau: "Keine wesentlichen primären Abbaugebiete für Smartphone-Metalle.", verarbeitung: "Reinstsilizium (z. B. Wacker Chemie), Hafnium-Aufbereitung, Wolfram/Kobalt (Pulver/Targets), Kupferraffination, Tantal-Veredelung", verwendung: "Reinstsilizium ist das Grundmaterial der Wafer. Hafnium isoliert Transistor-Gates. Wolfram/Kobalt dienen als mikroskopische Stecker (Plugs) im Chip. Kupfer/Tantal bilden die Leiterbahnen auf dem Die.", arbeitsbedingungen: "Zählt zu den Ländern mit den weltweit höchsten Arbeits- und Sozialstandards. Starke Gewerkschaften, strenge Regulierung des Arbeitsschutzes und der Arbeitszeiten." },
-            "Taiwan": { abbau: "Keine wesentlichen primären Abbaugebiete.", verarbeitung: "Wafer-Fertigung/Chip-Belichtung (TSMC), Substrate/Trägerplatinen (z. B. Unimicron), Lotlegierungen, Kupfer-Heatspreader", verwendung: "Hier entsteht in der Wafer-Fertigung das 'Gehirn' (der Die). Komplexe mehrlagige Substrate bilden die grüne Trägerplatte. Lotlegierungen verbinden Die und Substrat physisch und elektrisch.", arbeitsbedingungen: "Gute Bezahlung, aber extremer Leistungs- und Zeitdruck in der Halbleiterindustrie. Lange Schichten und Überstunden sind in Chip-Fabriken (Fabs) normal, um den 24/7-Betrieb aufrechtzuerhalten." },
-            "Südkorea": { abbau: "Indium (Nebenprodukt)", verarbeitung: "Wafer-Fertigung/Chip-Belichtung (Samsung), Substrate/Trägerplatinen, Indium-Lot-Plättchen", verwendung: "Fertigung des Prozessor-Chips (Die) und der zugehörigen Trägerplatinen. Indium-Lot wird als Thermal Interface Material (TIM) extrem wärmeleitend zwischen Chip und Kupferdeckel eingesetzt.", arbeitsbedingungen: "Moderne Arbeitsrechte, aber eine Kultur des extremen Wettbewerbs. Lange Arbeitszeiten und strikte Hierarchien prägen den Arbeitsalltag in großen Technologiekonzernen." },
-            "Japan": { abbau: "Indium (Nebenprodukt)", verarbeitung: "Hochreine Gase, Hafnium-Aufbereitung, Substrate/Trägerplatinen (z. B. Ibiden), Nickel-Spezialveredelung, Lotlegierungen", verwendung: "Gase (Bor/Phosphor) machen Transistoren leitfähig. Hafnium isoliert. Hier werden zudem essenzielle mehrlagige Trägerplatinen (Substrate) hergestellt. Nickel und Lot dienen den elektrischen Kontakten.", arbeitsbedingungen: "Stark regulierte Sicherheit und hohe Qualitätsstandards. Traditionell gibt es eine Überstundenkultur ('Karoshi'-Gefahr), wenngleich die Regierung in den letzten Jahren schärfere Gesetze zur Begrenzung von Arbeitszeiten erlassen hat." },
-            "Saudi-Arabien": { abbau: "Erdöl und Erdgas", verarbeitung: "-", verwendung: "Erdöl und Erdgas aus dem Nahen Osten bilden die chemische Basis für Epoxidharze. Diese Kunstharze sind das unverzichtbare Trägermaterial für die komplexe, mehrlagige grüne Trägerplatine (Package/Substrat).", arbeitsbedingungen: "Starke Abhängigkeit von ausländischen Wanderarbeitern im Energiesektor. Obwohl es Reformen gab, werden die Bedingungen für Arbeitsmigranten (Kafala-System) von Menschenrechtsorganisationen weiterhin oft als prekär eingestuft." },
-            "DR Kongo": { abbau: "Kobalt (>70%), Tantal (Coltan)", verarbeitung: "Wird meist roh exportiert.", verwendung: "Kobalt wird für interne, mikroskopische Kontakte (Plugs) auf dem Silizium-Chip verwendet. Tantal ist essenziell für die extrem feine Leiterbahn-Verdrahtung direkt auf dem Chip.", arbeitsbedingungen: "Eines der kritischsten Länder der Lieferkette: Im informellen Kleinbergbau (Artisanal Mining) gibt es weit verbreitete, teils lebensgefährliche Kinderarbeit und Zwangsarbeit. Schutzbekleidung fehlt fast vollständig. Oft finanzieren Minen bewaffnete Konflikte (Konfliktmineralien)." },
-            "Chile": { abbau: "Kupfer", verarbeitung: "Kupferkonzentrate", verwendung: "Kupfer bildet die winzigen Leiterbahnen direkt auf dem Silizium-Chip und wird massiv für den dicken, wärmeableitenden Deckel (Heatspreader) der CPU. verwendet.", arbeitsbedingungen: "Der industrielle Bergbau ist stark gewerkschaftlich organisiert und formell reguliert. Dennoch bleiben Minenarbeiter hohen gesundheitlichen Belastungen (Feinstaub, Chemikalien) ausgesetzt." },
-            "Peru": { abbau: "Kupfer, Zinn, Silber", verarbeitung: "-", verwendung: "Kupfer für Verdrahtung und Kühlkörper. Zinn und Silber sind die Hauptbestandteile von Lotlegierungen, die für BGA-Verbindungen (Lotkugeln an der Unterseite der CPU) genutzt werden.", arbeitsbedingungen: "Neben regulierten Großminen gibt es viel informellen Bergbau. Dort fehlen oft grundlegende Sicherheitsstandards, und das Risiko von Arbeitsausbeutung ist hoch." },
-            "Australien": { abbau: "Hafnium, Gold", verarbeitung: "Gold-Raffination", verwendung: "Hafnium isoliert als High-k-Dielektrikum moderne Transistoren (verhindert Kriechstrom). Gold wird für stark leitende Kontaktflächen und Draht-Bonding auf der Platine genutzt.", arbeitsbedingungen: "Sehr hohe Standards bei Arbeitsschutz und Sicherheit. Bergarbeiter und Ingenieure sind in der Regel hervorragend ausgebildet und zählen zu den Bestverdienenden im Land." },
-            "Südafrika": { abbau: "Hafnium", verarbeitung: "Gold-Raffination", verwendung: "Hafnium dient der elektrischen Isolierung winziger Transistor-Gates. Gold wird in der Veredelung für die Kontaktflächen auf dem CPU-Substrat verwendet.", arbeitsbedingungen: "Formell existieren gute Arbeitsschutzgesetze, jedoch ist die Realität im Bergbau (Tiefminen) von extrem harter, gefährlicher körperlicher Arbeit geprägt. Es kommt häufig zu Streiks bezüglich unzureichender Löhne." },
-            "Indonesien": { abbau: "Nickel (weltweit größter Förderer), Zinn", verarbeitung: "Massive Verarbeitungskapazitäten für Nickel", verwendung: "Nickel dient als Unterbeschichtung für Goldkontakte und wird als Korrosionsschutz galvanisch über den Kupfer-Heatspreader (Deckel) gezogen. Zinn bildet Basis-Lotkugeln.", arbeitsbedingungen: "Die extrem schnelle Ausweitung des Nickelbergbaus führt zunehmend zu Berichten über fatale Arbeitsunfälle in den Schmelzanlagen, mangelnden Arbeitsschutz und Belastung der umliegenden Dörfer durch giftige Abwässer." },
-            "Russland": { abbau: "Quarzsand (Silizium), Erdgas/Erdöl, Gold, Nickel", verarbeitung: "-", verwendung: "Silizium ist Grundmaterial für Wafer. Erdgas/Erdöl ist die chemische Basis für die Epoxidharz-Trägerplatte. Gold und Nickel sichern langlebige und extrem leitfähige Kontakte.", arbeitsbedingungen: "Im industriellen Rohstoffsektor herrschen oft raue Bedingungen. Unabhängige Gewerkschaften sind stark eingeschränkt, was die Durchsetzung von besseren Arbeitsbedingungen erschwert." },
-            "Brasilien": { abbau: "Quarzsand (Silizium), Tantal", verarbeitung: "-", verwendung: "Silizium als Grundmaterial des Mikrochips. Tantal wird für die extrem feine, local Verdrahtung direkt im Silizium-Die verwendet, da es thermisch hochstabil ist.", arbeitsbedingungen: "Ein Mix aus stark industrialisiertem Bergbau mit guten Standards und informellen Minen ('Garimpos'), in denen prekäre Bedingungen, Umweltzerstörung (Amazonas) und teils illegale Sklavenarbeit herrschen." },
-            "Türkei": { abbau: "Bor (>70%)", verarbeitung: "-", verwendung: "Bor wird als Gas bei der Chip-Herstellung in das Silizium 'eingeschossen' (Dotierung). Erst dadurch werden die Transistoren gesteuert leitfähig.", arbeitsbedingungen: "Der Bergbau wird staatlich reguliert, allerdings stand die Türkei in der Vergangenheit nach schweren Grubenunglücken wegen Lücken bei der Arbeitssicherheit stark in der Kritik." },
-            "Marokko": { abbau: "Phosphaterze", verarbeitung: "-", verwendung: "Phosphor wird zur Dotierung des Silizium-Wafers genutzt, um die elektrischen Eigenschaften der Transistoren für die P-N-Übergänge gezielt zu verändern.", arbeitsbedingungen: "Der Phosphatabbau wird von staatlichen Unternehmen kontrolliert und ist formell reguliert. Kritisiert werden jedoch oft die politischen Begleitumstände, da ein Teil des Abbaus in der umstrittenen Region Westsahara stattfindet." },
-            "Schweiz": { abbau: "-", verarbeitung: "Weltweite Hochraffination von Gold", verwendung: "Hochreines Gold wird für die winzigen Kontaktflächen auf dem Substrat und für das Draht-Bonding genutzt, da es als Edelmetall nicht oxidiert.", arbeitsbedingungen: "Höchste globale Standards bei Arbeitsschutz, Bezahlung und Sicherheit in den Veredelungsanlagen." },
-            "Malaysia": { abbau: "-", verarbeitung: "Lotlegierungen, Endmontage (Chip-Zusammensetzung & Nickel-Überzug)", verwendung: "Lotlegierungen verbinden den Silizium-Chip mit der Trägerplatte. In der Endmontage wird der Kupferdeckel zum Schutz vor Oxidation mit Nickel überzogen und auf das Package verklebt.", arbeitsbedingungen: "Wichtiger Hub für das 'Packaging' (Zusammenbau). Sehr oft arbeiten hier migrantische Arbeitskräfte aus Nachbarländern. NGOs berichten wiederholt von Praktiken, die an Zwangsarbeit grenzen (Pässe werden einbehalten, Arbeiter hoch verschuldet)." },
-            "Vietnam": { abbau: "-", verarbeitung: "Endmontage (Smartphone-Zusammensetzung)", verwendung: "Hauptsächlich Packaging und Endmontage: Die Platinen werden gelötet und die Geräte montiert.", arbeitsbedingungen: "Als aufstrebender Standort für Technologiefertigung gibt es viele moderne Fabriken. Dennoch sind die Löhne niedrig und lange Arbeitszeiten sowie restriktive Pausenregelungen sind keine Seltenheit." },
-            "Frankreich": { abbau: "-", verarbeitung: "Chemische Aufbereitung von Hafnium", verwendung: "Hafnium dient als unverzichtbares Isoliermaterial für die winzigen Transistor-Gates, um das unerwünschte Abfließen von Strom zu verhindern.", arbeitsbedingungen: "Sehr hohe europäische Arbeits- und Sicherheitsstandards in class chemischen Industrie." },
-            "Finnland": { abbau: "-", verarbeitung: "Wolfram/Kobalt-Veredelung zu Reinstpulver", verwendung: "Wolfram und Kobalt werden für die mikroskopisch kleinen, internen Stecker (Plugs) verwendet, die Milliarden Transistoren auf dem Chip verbinden.", arbeitsbedingungen: "Vorbildliche skandinavische Arbeitsrechte, hohes Maß an Mitbestimmung, starker Gesundheits- und Arbeitsschutz." },
-            "Kanada": { abbau: "Gold", verarbeitung: "Wolfram/Kobalt-Veredelung", verwendung: "Gold für oxidationsfreie Kontaktflächen am CPU-Sockel. Wolfram und Kobalt werden für die interne Verdrahtung und Kontaktstecker (Plugs) auf Transistorebene genutzt.", arbeitsbedingungen: "Strenge staatliche Überwachung im industriellen Bergbau und hohe Sicherheitsauflagen für Arbeiter." },
-            "Ruanda": { abbau: "Tantal", verarbeitung: "-", verwendung: "Tantal ist essenziell für die extrem feine, lokale Verdrahtung (Interconnects) und dient als Diffusionsbarriere direkt auf dem Silizium-Chip.", arbeitsbedingungen: "Bemüht sich darum, eine 'konfliktfreie' Bezugsquelle für Tantal zu sein (mit Blockchain-Tracking). Dennoch bleibt der informelle Abbau harte Handarbeit, und es gibt das Risiko, dass Mineralien aus prekären Nachbarländern geschmuggelt werden." },
-            "Ghana": { abbau: "Gold", verarbeitung: "-", verwendung: "Gold wird in der finalen Platine für Kontaktflächen genutzt, da es den perfekten Mix aus Leitfähigkeit und Korrosionsbeständigkeit bietet.", arbeitsbedingungen: "Neben dem regulierten industriellen Bergbau gibt es massiv informellen Kleinbergbau ('Galamsey'). Hier sind oft Kinder beteiligt, und Arbeiter vergiften sich chronisch bei der Goldgewinnung durch fehlende Schutzkleidung und hochgiftiges Quecksilber." },
-            "Philippinen": { abbau: "Nickel", verarbeitung: "-", verwendung: "Nickel wird als silberglänzender Überzug aufgetragen, um Korrosion zu verhindern, und dient als Barriere unter Goldkontakten.", arbeitsbedingungen: "Der Abbau führt oft zu Konflikten mit indigenen Bevölkerungsgruppen. Die Sicherheitsstandards schwanken stark; oftmals klagen Arbeiter über mangelnde Ausrüstung bei gefährlichen Tätigkeiten." },
-            "Mexiko": { abbau: "Silber", verarbeitung: "-", verwendung: "Silber ist neben Zinn ein Hauptbestandteil moderner Lotlegierungen. Diese bilden die BGA-Kügelchen, die die Bauteile elektrisch mit dem Mainboard verbinden.", arbeitsbedingungen: "Regulierte Großminen bieten formelle Beschäftigung, jedoch gibt es in abgelegenen Gebieten ein starkes Risiko durch den Einfluss organisierter Kriminalität (Kartelle), was die Sicherheit der Minenarbeiter massiv gefährdet." },
-            "Myanmar": { abbau: "Zinn", verarbeitung: "-", verwendung: "Zinn ist die Basis aller Lötverbindungen. Es wird benötigt, um die Chips auf die Trägerplatte zu löten, sowie zur späteren Mainboard-Verbindung.", arbeitsbedingungen: "Hochgradig kritisch. Der Abbau findet teils in Konfliktzonen statt und finanziert Rebellengruppen oder das Militär. Es herrschen oft desaströse Sicherheitsbedingungen ohne jeglichen Arbeitsschutz, und es gibt Berichte über Zwangsarbeit." },
-            "Großbritannien": { abbau: "Eisen, Kupfer", verarbeitung: "-", verwendung: "Speziallegierungen für Gehäuse oder Lautsprecher.", arbeitsbedingungen: "Europäische Arbeits- und Sicherheitsstandards." },
-            "Niederlande": { abbau: "-", verarbeitung: "NFC-Chips, Halbleiter-Ausrüstung", verwendung: "Zentrale Rolle in der Verarbeitung von NFC/Kommunikation.", arbeitsbedingungen: "Sehr hohe europäische Standards." },
-            "Italien": { abbau: "-", verarbeitung: "MEMS-Sensoren (Beschleunigung, Gyroskop)", verwendung: "Hochpräzise Mikroelektronik-Fertigung.", arbeitsbedingungen: "Europäische Standards, starker Arbeitsschutz." },
-            "Österreich": { abbau: "-", verarbeitung: "Licht- und Kamerasensoren", verwendung: "Produktion hochspezialisierter optischer Sensoren.", arbeitsbedingungen: "Sehr hohe Standards bei Arbeitssicherheit." }
+            "China": { 
+                abbau: "Quarzsand (Silizium & Glasfaser), Phosphaterze, Wolfram (>80%), Gold, Zinn, Silber, Indium", 
+                verarbeitung: "Reinstsilizium, Wolfram-Veredelung, Kupferraffination, Tantal, Gold- & Nickel-Raffination, Lotlegierungen, Massenfertigung Kupfer-Heatspreader, Indium-Plättchen",
+                verwendung: "Silizium bildet den Chip (Die). Phosphor dotiert Transistoren. Wolfram bildet interne Kontakte. Gold für Kontaktflächen. Zinn/Silber/Indium für Lötverbindungen und Wärmeübertragung (TIM). Kupfer für den Kühlkörper. Nickel als Unterbeschichtung.",
+                arbeitsbedingungen: "Stark variierende Bedingungen. Während High-Tech-Fabriken moderne Standards aufweisen, gibt es im Bergbau und bei Vorlieferanten oft extrem lange Arbeitszeiten (996-Arbeitskultur) und mangelhaften Gesundheitsschutz. Bei einigen Rohstoffen gibt es wiederholt internationale Vorwürfe von Zwangsarbeit."
+            },
+            "USA": { 
+                abbau: "Quarzsand (Silizium & Glasfaser), Bor, Kupfer, Erdöl/Erdgas, Gold", 
+                verarbeitung: "Reinstsilizium, Wafer-Fertigung/Chip-Belichtung (Intel), Gase (Bor/Phosphor), Tantal-Veredelung, Indium-Aufbereitung",
+                verwendung: "Silizium für den Hauptchip. Bor/Phosphor zur elektrischen Steuerung der Transistoren. Kupfer/Tantal für Chip-Verdrahtung. Erdöl/Erdgas wird zu Kunstharz für die Trägerplatte (Substrat). Glasfaser stabilisiert das Package.",
+                arbeitsbedingungen: "Strenge Arbeitsgesetze und sehr hohe Sicherheitsstandards in der industriellen Fertigung. In der Halbleiterindustrie arbeiten meist hochqualifizierte, gut bezahlte Spezialisten."
+            },
+            "Deutschland": { 
+                abbau: "Keine wesentlichen primären Abbaugebiete für Smartphone-Metalle.", 
+                verarbeitung: "Reinstsilizium (z. B. Wacker Chemie), Hafnium-Aufbereitung, Wolfram/Kobalt (Pulver/Targets), Kupferraffination, Tantal-Veredelung",
+                verwendung: "Reinstsilizium ist das Grundmaterial der Wafer. Hafnium isoliert Transistor-Gates. Wolfram/Kobalt dienen als mikroskopische Stecker (Plugs) im Chip. Kupfer/Tantal bilden die Leiterbahnen auf dem Die.",
+                arbeitsbedingungen: "Zählt zu den Ländern mit den weltweit höchsten Arbeits- und Sozialstandards. Starke Gewerkschaften, strenge Regulierung des Arbeitsschutzes und der Arbeitszeiten."
+            },
+            "Taiwan": { 
+                abbau: "Keine wesentlichen primären Abbaugebiete.", 
+                verarbeitung: "Wafer-Fertigung/Chip-Belichtung (TSMC), Substrate/Trägerplatinen (z. B. Unimicron), Lotlegierungen, Kupfer-Heatspreader",
+                verwendung: "Hier entsteht in der Wafer-Fertigung das 'Gehirn' (der Die). Komplexe mehrlagige Substrate bilden die grüne Trägerplatte. Lotlegierungen verbinden Die und Substrat physisch und elektrisch.",
+                arbeitsbedingungen: "Gute Bezahlung, aber extremer Leistungs- und Zeitdruck in der Halbleiterindustrie. Lange Schichten und Überstunden sind in Chip-Fabriken (Fabs) normal, um den 24/7-Betrieb aufrechtzuerhalten."
+            },
+            "Südkorea": { 
+                abbau: "Indium (Nebenprodukt)", 
+                verarbeitung: "Wafer-Fertigung/Chip-Belichtung (Samsung), Substrate/Trägerplatinen, Indium-Lot-Plättchen",
+                verwendung: "Fertigung des Prozessor-Chips (Die) und der zugehörigen Trägerplatinen. Indium-Lot wird als Thermal Interface Material (TIM) extrem wärmeleitend zwischen Chip und Kupferdeckel eingesetzt.",
+                arbeitsbedingungen: "Moderne Arbeitsrechte, aber eine Kultur des extremen Wettbewerbs. Lange Arbeitszeiten und strikte Hierarchien prägen den Arbeitsalltag in großen Technologiekonzernen."
+            },
+            "Japan": { 
+                abbau: "Indium (Nebenprodukt)", 
+                verarbeitung: "Hochreine Gase, Hafnium-Aufbereitung, Substrate/Trägerplatinen (z. B. Ibiden), Nickel-Spezialveredelung, Lotlegierungen",
+                verwendung: "Gase (Bor/Phosphor) machen Transistoren leitfähig. Hafnium isoliert. Hier werden zudem essenzielle mehrlagige Trägerplatinen (Substrate) hergestellt. Nickel und Lot dienen den elektrischen Kontakten.",
+                arbeitsbedingungen: "Stark regulierte Sicherheit und hohe Qualitätsstandards. Traditionell gibt es eine Überstundenkultur ('Karoshi'-Gefahr), wenngleich die Regierung in den letzten Jahren schärfere Gesetze zur Begrenzung von Arbeitszeiten erlassen hat."
+            },
+            "Saudi-Arabien": {
+                abbau: "Erdöl und Erdgas",
+                verarbeitung: "-",
+                verwendung: "Erdöl und Erdgas aus dem Nahen Osten bilden die chemische Basis für Epoxidharze. Diese Kunstharze sind das unverzichtbare Trägermaterial für die komplexe, mehrlagige grüne Trägerplatine (Package/Substrat).",
+                arbeitsbedingungen: "Starke Abhängigkeit von ausländischen Wanderarbeitern im Energiesektor. Obwohl es Reformen gab, werden die Bedingungen für Arbeitsmigranten (Kafala-System) von Menschenrechtsorganisationen weiterhin oft als prekär eingestuft."
+            },
+            "DR Kongo": { 
+                abbau: "Kobalt (>70%), Tantal (Coltan)", 
+                verarbeitung: "Wird meist roh exportiert.",
+                verwendung: "Kobalt wird für interne, mikroskopische Kontakte (Plugs) auf dem Silizium-Chip verwendet. Tantal ist essenziell für die extrem feine Leiterbahn-Verdrahtung direkt auf dem Chip.",
+                arbeitsbedingungen: "Eines der kritischsten Länder der Lieferkette: Im informellen Kleinbergbau (Artisanal Mining) gibt es weit verbreitete, teils lebensgefährliche Kinderarbeit und Zwangsarbeit. Schutzbekleidung fehlt fast vollständig. Oft finanzieren Minen bewaffnete Konflikte (Konfliktmineralien)."
+            },
+            "Chile": { 
+                abbau: "Kupfer", 
+                verarbeitung: "Kupferkonzentrate",
+                verwendung: "Kupfer bildet die winzigen Leiterbahnen direkt auf dem Silizium-Chip und wird massiv für den dicken, wärmeableitenden Deckel (Heatspreader) der CPU. verwendet.",
+                arbeitsbedingungen: "Der industrielle Bergbau ist stark gewerkschaftlich organisiert und formell reguliert. Dennoch bleiben Minenarbeiter hohen gesundheitlichen Belastungen (Feinstaub, Chemikalien) ausgesetzt."
+            },
+            "Peru": { 
+                abbau: "Kupfer, Zinn, Silber", 
+                verarbeitung: "-",
+                verwendung: "Kupfer für Verdrahtung und Kühlkörper. Zinn und Silber sind die Hauptbestandteile von Lotlegierungen, die für BGA-Verbindungen (Lotkugeln an der Unterseite der CPU) genutzt werden.",
+                arbeitsbedingungen: "Neben regulierten Großminen gibt es viel informellen Bergbau. Dort fehlen oft grundlegende Sicherheitsstandards, und das Risiko von Arbeitsausbeutung ist hoch."
+            },
+            "Australien": { 
+                abbau: "Hafnium, Gold", 
+                verarbeitung: "Gold-Raffination",
+                verwendung: "Hafnium isoliert als High-k-Dielektrikum moderne Transistoren (verhindert Kriechstrom). Gold wird für stark leitende Kontaktflächen und Draht-Bonding auf der Platine genutzt.",
+                arbeitsbedingungen: "Sehr hohe Standards bei Arbeitsschutz und Sicherheit. Bergarbeiter und Ingenieure sind in der Regel hervorragend ausgebildet und zählen zu den Bestverdienenden im Land."
+            },
+            "Südafrika": { 
+                abbau: "Hafnium", 
+                verarbeitung: "Gold-Raffination",
+                verwendung: "Hafnium dient der elektrischen Isolierung winziger Transistor-Gates. Gold wird in der Veredelung für die Kontaktflächen auf dem CPU-Substrat verwendet.",
+                arbeitsbedingungen: "Formell existieren gute Arbeitsschutzgesetze, jedoch ist die Realität im Bergbau (Tiefminen) von extrem harter, gefährlicher körperlicher Arbeit geprägt. Es kommt häufig zu Streiks bezüglich unzureichender Löhne."
+            },
+            "Indonesien": { 
+                abbau: "Nickel (weltweit größter Förderer), Zinn", 
+                verarbeitung: "Massive Verarbeitungskapazitäten für Nickel",
+                verwendung: "Nickel dient als Unterbeschichtung für Goldkontakte und wird als Korrosionsschutz galvanisch über den Kupfer-Heatspreader (Deckel) gezogen. Zinn bildet Basis-Lotkugeln.",
+                arbeitsbedingungen: "Die extrem schnelle Ausweitung des Nickelbergbaus führt zunehmend zu Berichten über fatale Arbeitsunfälle in den Schmelzanlagen, mangelnden Arbeitsschutz und Belastung der umliegenden Dörfer durch giftige Abwässer."
+            },
+            "Russland": { 
+                abbau: "Quarzsand (Silizium), Erdgas/Erdöl, Gold, Nickel", 
+                verarbeitung: "-",
+                verwendung: "Silizium ist Grundmaterial für Wafer. Erdgas/Erdöl ist die chemische Basis für die Epoxidharz-Trägerplatte. Gold und Nickel sichern langlebige und extrem leitfähige Kontakte.",
+                arbeitsbedingungen: "Im industriellen Rohstoffsektor herrschen oft raue Bedingungen. Unabhängige Gewerkschaften sind stark eingeschränkt, was die Durchsetzung von besseren Arbeitsbedingungen erschwert."
+            },
+            "Brasilien": { 
+                abbau: "Quarzsand (Silizium), Tantal", 
+                verarbeitung: "-",
+                verwendung: "Silizium als Grundmaterial des Mikrochips. Tantal wird für die extrem feine, local Verdrahtung direkt im Silizium-Die verwendet, da es thermisch hochstabil ist.",
+                arbeitsbedingungen: "Ein Mix aus stark industrialisiertem Bergbau mit guten Standards und informellen Minen ('Garimpos'), in denen prekäre Bedingungen, Umweltzerstörung (Amazonas) und teils illegale Sklavenarbeit herrschen."
+            },
+            "Türkei": { 
+                abbau: "Bor (>70%)", 
+                verarbeitung: "-",
+                verwendung: "Bor wird als Gas bei der Chip-Herstellung in das Silizium 'eingeschossen' (Dotierung). Erst dadurch werden die Transistoren gesteuert leitfähig.",
+                arbeitsbedingungen: "Der Bergbau wird staatlich reguliert, allerdings stand die Türkei in der Vergangenheit nach schweren Grubenunglücken wegen Lücken bei der Arbeitssicherheit stark in der Kritik."
+            },
+            "Marokko": { 
+                abbau: "Phosphaterze", 
+                verarbeitung: "-",
+                verwendung: "Phosphor wird zur Dotierung des Silizium-Wafers genutzt, um die elektrischen Eigenschaften der Transistoren für die P-N-Übergänge gezielt zu verändern.",
+                arbeitsbedingungen: "Der Phosphatabbau wird von staatlichen Unternehmen kontrolliert und ist formell reguliert. Kritisiert werden jedoch oft die politischen Begleitumstände, da ein Teil des Abbaus in der umstrittenen Region Westsahara stattfindet."
+            },
+            "Schweiz": { 
+                abbau: "-", 
+                verarbeitung: "Weltweite Hochraffination von Gold",
+                verwendung: "Hochreines Gold wird für die winzigen Kontaktflächen auf dem Substrat und für das Draht-Bonding genutzt, da es als Edelmetall nicht oxidiert.",
+                arbeitsbedingungen: "Höchste globale Standards bei Arbeitsschutz, Bezahlung und Sicherheit in den Veredelungsanlagen."
+            },
+            "Malaysia": { 
+                abbau: "-", 
+                verarbeitung: "Lotlegierungen, Endmontage (Chip-Zusammensetzung & Nickel-Überzug)",
+                verwendung: "Lotlegierungen verbinden den Silizium-Chip mit der Trägerplatte. In der Endmontage wird der Kupferdeckel zum Schutz vor Oxidation mit Nickel überzogen und auf das Package verklebt.",
+                arbeitsbedingungen: "Wichtiger Hub für das 'Packaging' (Zusammenbau). Sehr oft arbeiten hier migrantische Arbeitskräfte aus Nachbarländern. NGOs berichten wiederholt von Praktiken, die an Zwangsarbeit grenzen (Pässe werden einbehalten, Arbeiter hoch verschuldet)."
+            },
+            "Vietnam": { 
+                abbau: "-", 
+                verarbeitung: "Endmontage (Smartphone-Zusammensetzung)",
+                verwendung: "Hauptsächlich Packaging und Endmontage: Die Platinen werden gelötet und die Geräte montiert.",
+                arbeitsbedingungen: "Als aufstrebender Standort für Technologiefertigung gibt es viele moderne Fabriken. Dennoch sind die Löhne niedrig und lange Arbeitszeiten sowie restriktive Pausenregelungen sind keine Seltenheit."
+            },
+            "Frankreich": { 
+                abbau: "-", 
+                verarbeitung: "Chemische Aufbereitung von Hafnium",
+                verwendung: "Hafnium dient als unverzichtbares Isoliermaterial für die winzigen Transistor-Gates, um das unerwünschte Abfließen von Strom zu verhindern.",
+                arbeitsbedingungen: "Sehr hohe europäische Arbeits- und Sicherheitsstandards in class chemischen Industrie."
+            },
+            "Finnland": { 
+                abbau: "-", 
+                verarbeitung: "Wolfram/Kobalt-Veredelung zu Reinstpulver",
+                verwendung: "Wolfram und Kobalt werden für die mikroskopisch kleinen, internen Stecker (Plugs) verwendet, die Milliarden Transistoren auf dem Chip verbinden.",
+                arbeitsbedingungen: "Vorbildliche skandinavische Arbeitsrechte, hohes Maß an Mitbestimmung, starker Gesundheits- und Arbeitsschutz."
+            },
+            "Kanada": { 
+                abbau: "Gold", 
+                verarbeitung: "Wolfram/Kobalt-Veredelung",
+                verwendung: "Gold für oxidationsfreie Kontaktflächen am CPU-Sockel. Wolfram und Kobalt werden für die interne Verdrahtung und Kontaktstecker (Plugs) auf Transistorebene genutzt.",
+                arbeitsbedingungen: "Strenge staatliche Überwachung im industriellen Bergbau und hohe Sicherheitsauflagen für Arbeiter."
+            },
+            "Ruanda": { 
+                abbau: "Tantal", 
+                verarbeitung: "-",
+                verwendung: "Tantal ist essenziell für die extrem feine, lokale Verdrahtung (Interconnects) und dient als Diffusionsbarriere direkt auf dem Silizium-Chip.",
+                arbeitsbedingungen: "Bemüht sich darum, eine 'konfliktfreie' Bezugsquelle für Tantal zu sein (mit Blockchain-Tracking). Dennoch bleibt der informelle Abbau harte Handarbeit, und es gibt das Risiko, dass Mineralien aus prekären Nachbarländern geschmuggelt werden."
+            },
+            "Ghana": { 
+                abbau: "Gold", 
+                verarbeitung: "-",
+                verwendung: "Gold wird in der finalen Platine für Kontaktflächen genutzt, da es den perfekten Mix aus Leitfähigkeit und Korrosionsbeständigkeit bietet.",
+                arbeitsbedingungen: "Neben dem regulierten industriellen Bergbau gibt es massiv informellen Kleinbergbau ('Galamsey'). Hier sind oft Kinder beteiligt, und Arbeiter vergiften sich chronisch bei der Goldgewinnung durch fehlende Schutzkleidung und hochgiftiges Quecksilber."
+            },
+            "Philippinen": { 
+                abbau: "Nickel", 
+                verarbeitung: "-",
+                verwendung: "Nickel wird als silberglänzender Überzug aufgetragen, um Korrosion zu verhindern, und dient als Barriere unter Goldkontakten.",
+                arbeitsbedingungen: "Der Abbau führt oft zu Konflikten mit indigenen Bevölkerungsgruppen. Die Sicherheitsstandards schwanken stark; oftmals klagen Arbeiter über mangelnde Ausrüstung bei gefährlichen Tätigkeiten."
+            },
+            "Mexiko": { 
+                abbau: "Silber", 
+                verarbeitung: "-",
+                verwendung: "Silber ist neben Zinn ein Hauptbestandteil moderner Lotlegierungen. Diese bilden die BGA-Kügelchen, die die Bauteile elektrisch mit dem Mainboard verbinden.",
+                arbeitsbedingungen: "Regulierte Großminen bieten formelle Beschäftigung, jedoch gibt es in abgelegenen Gebieten ein starkes Risiko durch den Einfluss organisierter Kriminalität (Kartelle), was die Sicherheit der Minenarbeiter massiv gefährdet."
+            },
+            "Myanmar": { 
+                abbau: "Zinn", 
+                verarbeitung: "-",
+                verwendung: "Zinn ist die Basis aller Lötverbindungen. Es wird benötigt, um die Chips auf die Trägerplatte zu löten, sowie zur späteren Mainboard-Verbindung.",
+                arbeitsbedingungen: "Hochgradig kritisch. Der Abbau findet teils in Konfliktzonen statt und finanziert Rebellengruppen oder das Militär. Es herrschen oft desaströse Sicherheitsbedingungen ohne jeglichen Arbeitsschutz, und es gibt Berichte über Zwangsarbeit."
+            },
+            "Großbritannien": {
+                abbau: "Eisen, Kupfer",
+                verarbeitung: "-",
+                verwendung: "Speziallegierungen für Gehäuse oder Lautsprecher.",
+                arbeitsbedingungen: "Europäische Arbeits- und Sicherheitsstandards."
+            },
+            "Niederlande": {
+                abbau: "-",
+                verarbeitung: "NFC-Chips, Halbleiter-Ausrüstung",
+                verwendung: "Zentrale Rolle in der Verarbeitung von NFC/Kommunikation.",
+                arbeitsbedingungen: "Sehr hohe europäische Standards."
+            },
+            "Italien": {
+                abbau: "-",
+                verarbeitung: "MEMS-Sensoren (Beschleunigung, Gyroskop)",
+                verwendung: "Hochpräzise Mikroelektronik-Fertigung.",
+                arbeitsbedingungen: "Europäische Standards, starker Arbeitsschutz."
+            },
+            "Österreich": {
+                abbau: "-",
+                verarbeitung: "Licht- und Kamerasensoren",
+                verwendung: "Produktion hochspezialisierter optischer Sensoren.",
+                arbeitsbedingungen: "Sehr hohe Standards bei Arbeitssicherheit."
+            }
         };
 
         const cpuData = {
@@ -342,26 +797,18 @@
             speaker: { name: "Smartphone-Lautsprecher", category: "AUDIO", materials: ["Neodym", "Eisen", "Kupfer", "PEEK", "Glasfaser", "Edelstahl", "Chrom", "Messing", "Gold"], geography: { mining: ["China", "Chile", "Peru", "USA", "Deutschland", "Großbritannien", "Südafrika", "Brasilien"], manufacturing: ["China", "Vietnam", "Japan"] }, technicalSummary: "Elektromechanisches Modul (Neodym-Antrieb, PEEK-Membran)." }
         };
 
-        // --- PERFORMANCE OPTIMIERUNG: Vorab-Berechnung für Regex und Links ---
-        const cpuValues = Object.values(cpuData);
-        const allMaterials = Array.from(new Set(cpuValues.flatMap(data => data.materials))).sort();
-        const allComponents = cpuValues.map(c => c.name);
-        
-        // Dictionary für O(1) Lookups beim Auto-Linking
-        const termDict = {};
-        allMaterials.forEach(m => termDict[m.toLowerCase()] = { orig: m, type: 'mineral' });
-        allComponents.forEach(c => termDict[c.toLowerCase()] = { orig: c, type: 'component' });
-        
-        // Ein einziger mächtiger Regex für alle Begriffe (nach Länge absteigend sortiert, damit Teilbegriffe nicht fehlschlagen)
-        const allTermsSorted = [...allComponents, ...allMaterials].sort((a, b) => b.length - a.length);
-        const termsRegex = new RegExp(`(${allTermsSorted.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
+        function getAllUniqueMaterials() {
+            const matSet = new Set();
+            Object.values(cpuData).forEach(data => data.materials.forEach(m => matSet.add(m)));
+            return Array.from(matSet).sort();
+        }
 
         function getCountryInfo(countryDe) {
             let miningMinerals = new Set();
             let manufacturingComps = [];
             let allComps = [];
 
-            for (const comp of cpuValues) {
+            for (const comp of Object.values(cpuData)) {
                 if (comp.geography.mining.includes(countryDe)) {
                     comp.materials.forEach(m => miningMinerals.add(m));
                     if (!allComps.includes(comp)) allComps.push(comp);
@@ -379,7 +826,7 @@
             const miningSet = new Set();
             const manufacturingSet = new Set();
 
-            for (const comp of cpuValues) {
+            for (const comp of Object.values(cpuData)) {
                 if (comp.materials.some(m => m.toLowerCase() === searchTerm)) {
                     comp.geography.mining.forEach(c => miningSet.add(c));
                     comp.geography.manufacturing.forEach(c => manufacturingSet.add(c));
@@ -392,72 +839,110 @@
             if (!list || list.length === 0) return `<span style="color: #7f8c8d; font-style: italic;">${emptyMessage}</span>`;
             return list.map(item => {
                 const safeItem = item.replace(/'/g, "\\'");
-                return `<span class="clickable-tag" onclick="handleTagClick('${type}', '${safeItem}')">${item}</span>`;
+                return `<span class="clickable-tag" onclick="window.handleTagClick('${type}', '${safeItem}')">${item}</span>`;
             }).join(" ");
         }
 
-        function clearMapAndUI() {
-            // Instant Reset mithilfe der vorberechneten Basisklasse
-            g.selectAll("path").attr("class", d => d.baseClass);
-            els.mapLegend.style.display = "none";
-            els.defaultLegend.style.display = "block";
-            els.searchResults.style.display = "none";
-            els.countryDetails.style.display = "none";
-            els.defaultMessage.style.display = "block";
-        }
+        window.clearMapAndUI = function() {
+            g.selectAll("path").classed("highlighted-country highlighted-mining highlighted-manufacturing highlighted-both", false);
+            document.getElementById("map-legend").style.display = "none";
+            document.getElementById("default-legend").style.display = "block";
+            document.getElementById("search-results").style.display = "none";
+            document.getElementById("country-details").style.display = "none";
+            document.getElementById("default-message").style.display = "block";
+        };
 
         window.handleTagClick = function(type, value) {
-            clearMapAndUI(); 
-            els.search.value = value;
+            window.clearMapAndUI(); 
+            document.getElementById("country-search").value = value;
             
             if (type === 'mineral') showMineralInfo(value);
             else if (type === 'country') {
                 let enName = Object.keys(countryTranslations).find(key => countryTranslations[key] === value);
-                showCountryInfo(enName || value);
+                if (!enName) enName = value;
+                showCountryInfo(enName);
             } else if (type === 'component') {
-                const comp = cpuValues.find(c => c.name === value);
+                const comp = Object.values(cpuData).find(c => c.name === value);
                 if (comp) showComponentInfo(comp);
             }
         };
 
-        // --- PERFORMANCE OPTIMIERUNG: autoLinkText mit einzelnem Regex-Pass ---
         function autoLinkText(text) {
             if (!text || text === "-") return text;
-            return text.replace(termsRegex, match => {
-                const info = termDict[match.toLowerCase()];
-                return `<span class="text-link-tag" onclick="handleTagClick('${info.type}', '${info.orig}')">${match}</span>`;
+            const materials = getAllUniqueMaterials();
+            const components = Object.values(cpuData).map(c => c.name);
+            const terms = [...components, ...materials].sort((a, b) => b.length - a.length);
+            
+            let placeholders = [];
+            terms.forEach((term) => {
+                const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const regex = new RegExp(`(${escapedTerm})`, 'gi');
+                if (regex.test(text)) {
+                    text = text.replace(regex, function(match) {
+                        const isMaterial = materials.some(m => m.toLowerCase() === term.toLowerCase());
+                        const originalTerm = isMaterial ? materials.find(m => m.toLowerCase() === term.toLowerCase()) : components.find(c => c.toLowerCase() === term.toLowerCase());
+                        const type = isMaterial ? 'mineral' : 'component';
+                        placeholders.push(`<span class="text-link-tag" onclick="window.handleTagClick('${type}', '${originalTerm}')">${match}</span>`);
+                        return `__PLCHLDR${placeholders.length - 1}__`;
+                    });
+                }
             });
+            placeholders.forEach((html, i) => { text = text.replace(new RegExp(`__PLCHLDR${i}__`, 'g'), html); });
+            return text;
         }
 
-        // --- PERFORMANCE OPTIMIERUNG: Map Highlight (O(1) Set-Lookups anstatt Array.includes) ---
         function highlightRoles(miningArray, manufacturingArray) {
-            const miningSet = new Set(miningArray);
-            const mfgSet = new Set(manufacturingArray);
-
-            g.selectAll("path")
-                .attr("class", d => d.baseClass) // Erst alle resetten
-                .filter(d => miningSet.has(d.properties.deName) || mfgSet.has(d.properties.deName))
-                .classed("highlighted-both", d => miningSet.has(d.properties.deName) && mfgSet.has(d.properties.deName))
-                .classed("highlighted-mining", d => miningSet.has(d.properties.deName) && !mfgSet.has(d.properties.deName))
-                .classed("highlighted-manufacturing", d => !miningSet.has(d.properties.deName) && mfgSet.has(d.properties.deName))
-                .raise();
+            g.selectAll("path").each(function(d) {
+                const countryEn = d.properties.name;
+                const countryDe = countryTranslations[countryEn] || countryEn;
+                const isMining = miningArray.includes(countryDe);
+                const isManufacturing = manufacturingArray.includes(countryDe);
+                
+                if (isMining && isManufacturing) d3.select(this).classed("highlighted-both", true).raise();
+                else if (isMining) d3.select(this).classed("highlighted-mining", true).raise();
+                else if (isManufacturing) d3.select(this).classed("highlighted-manufacturing", true).raise();
+            });
             
-            els.defaultLegend.style.display = "none";
-            els.mapLegend.style.display = "block";
+            document.getElementById("default-legend").style.display = "none";
+            document.getElementById("map-legend").style.display = "block";
         }
 
+        // --- HIER WIRD DAS INDIVIDUELLE NOTIZFELD ERSTELLT ---
         function renderDetails(title, sections) {
-            els.defaultMessage.style.display = "none";
-            els.searchResults.style.display = "none";
-            els.countryDetails.style.display = "block";
+            document.getElementById("default-message").style.display = "none";
+            document.getElementById("search-results").style.display = "none";
+            const container = document.getElementById("country-details");
+            container.style.display = "block";
             
-            let html = `<h2 style="color: #e74c3c; margin-bottom: 5px;">${title}</h2>`;
+            const isBookmarked = window.userData && window.userData.bookmarks && window.userData.bookmarks.includes(title);
+            const starHtml = window.currentUser ? `<span id="btn-star" class="bookmark-btn" onclick="window.toggleBookmark('${title}')" style="float:right;" title="Zu meiner Sammlung hinzufügen">${isBookmarked ? '⭐' : '☆'}</span>` : '';
+
+            let html = `<h2 style="color: #e74c3c; margin-bottom: 5px;">${title} ${starHtml}</h2>`;
             sections.forEach(sec => {
                 const headerColor = sec.color || "#2980b9";
                 html += `<h3 style="color: ${headerColor}; border-bottom: 2px solid #eee; padding-bottom: 5px; font-size: 1.1em; margin-top: 20px;">${sec.title}</h3>`;
                 html += `<p style="line-height: 1.5; color: #34495e; margin-top: 5px;">${sec.content}</p>`;
             });
-            els.countryDetails.innerHTML = html;
+
+            if (window.currentUser) {
+                const safeTitle = title.replace(/[^a-zA-Z0-9]/g, '-');
+                const currentNote = (window.userData && window.userData.notes && window.userData.notes[title]) ? window.userData.notes[title] : "";
+                html += `
+                <div style="margin-top: 25px; padding: 15px; background: #fdf2f0; border-radius: 8px; border: 1px solid #fadbd8;">
+                    <h3 style="color: #e67e22; margin-top: 0; font-size: 1.1em;">Meine Notizen zu diesem Eintrag</h3>
+                    <textarea id="note-${safeTitle}" style="width: 100%; height: 80px; padding: 10px; border: 1px solid #bdc3c7; border-radius: 4px; box-sizing: border-box; font-family: inherit;">${currentNote}</textarea>
+                    <div style="display: flex; align-items: center; margin-top: 8px;">
+                        <button onclick="window.saveItemNote('${title}')" style="background: #27ae60; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size:14px;">Speichern</button>
+                        <span id="msg-${safeTitle}" style="margin-left: 10px; color: #27ae60; font-size: 14px; font-weight: bold;"></span>
+                    </div>
+                </div>`;
+            } else {
+                html += `<div style="margin-top: 25px; padding: 15px; background: #ecf0f1; border-radius: 8px; font-size: 0.9em; color: #7f8c8d; text-align: center;">
+                    <em>Melde dich an, um eigene Notizen und Lesezeichen zu diesem Eintrag zu speichern.</em>
+                </div>`;
+            }
+
+            container.innerHTML = html;
         }
 
         function showCountryInfo(countryEn) {
@@ -465,13 +950,10 @@
             const info = getCountryInfo(countryDe);
             const narrative = countryNarratives[countryEn] || countryNarratives[countryDe];
 
-            els.mapLegend.style.display = "none";
-            els.defaultLegend.style.display = "none";
+            document.getElementById("map-legend").style.display = "none";
+            document.getElementById("default-legend").style.display = "none";
             
-            g.selectAll("path")
-                .filter(p => p.properties.name === countryEn)
-                .classed("highlighted-country", true)
-                .raise();
+            g.selectAll("path").filter(p => p.properties.name === countryEn).classed("highlighted-country", true).raise();
 
             let sections = [];
             if (info.components.length > 0) {
@@ -522,7 +1004,7 @@
             const mapData = getMapDataForMaterial(mineral);
             highlightRoles(mapData.miningLocations, mapData.manufacturingLocations);
             
-            const usedInComps = cpuValues.filter(c => c.materials.includes(mineral)).map(c => c.name);
+            const usedInComps = Object.values(cpuData).filter(c => c.materials.includes(mineral)).map(c => c.name);
             const mineralTransportDesc = "<b>Massengut-Frachter (Bulk):</b> Rohe Mineralien und Erze sind extrem schwer und haben einen geringen Kilo-Wert. Sie werden fast ausschließlich über die Weltmeere verschifft.<br><br><b>Güterzug / LKW (Schwerlast):</b> Übernimmt den Transport von den Minen zu den Häfen und Schmelzanlagen.";
 
             renderDetails(`Rohstoff: ${mineral}`, [
@@ -534,9 +1016,8 @@
         }
 
         // --- D3 Setup & Map Engine ---
-        const mapContainer = document.getElementById('map-container');
-        const width = mapContainer.clientWidth;
-        const height = mapContainer.clientHeight;
+        const width = document.getElementById('map-container').clientWidth;
+        const height = document.getElementById('map-container').clientHeight;
 
         const svg = d3.select("#map-canvas")
             .append("svg")
@@ -544,8 +1025,8 @@
             .attr("preserveAspectRatio", "xMidYMid meet")
             .on("click", function(event) {
                 if (event.target.tagName.toLowerCase() === 'svg') {
-                    els.search.value = "";
-                    clearMapAndUI();
+                    document.getElementById("country-search").value = "";
+                    window.clearMapAndUI();
                 }
             });
 
@@ -560,54 +1041,57 @@
 
         // Echte Weltkarte ONLINE abrufen
         d3.json("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson").then(function(data) {
-            els.loading.style.display = "none";
+            document.getElementById("loading").style.display = "none";
 
-            // PERFORMANCE OPTIMIERUNG: Vorab-Kalkulation der Basis-Klassen
-            g.selectAll("path").data(data.features).enter().append("path")
-                .attr("d", path)
-                .each(function(d) {
+            g.selectAll("path").data(data.features).enter().append("path").attr("d", path)
+                .attr("class", function(d) {
                     const countryEn = d.properties.name;
                     const countryDe = countryTranslations[countryEn] || countryEn;
-                    d.properties.deName = countryDe; // Caching des deutschen Namens
+                    
+                    const geoCenter = d3.geoCentroid(d);
+                    if(geoCenter && !isNaN(geoCenter[0])) { 
+                        countryCentroids[countryEn] = geoCenter; 
+                        countryCentroids[countryDe] = geoCenter; 
+                    }
                     
                     const hasNarrative = !!(countryNarratives[countryEn] || countryNarratives[countryDe]);
                     const compInfo = getCountryInfo(countryDe);
                     const hasComponent = compInfo.components.length > 0;
                     
-                    let bClass = "country ";
-                    if (hasNarrative) bClass += "role-major";
-                    else if (hasComponent) bClass += "role-minor";
-                    else bClass += "role-none";
-                    d.baseClass = bClass; // Caching der CSS-Klasse
+                    let baseClass = "country ";
+                    if (hasNarrative) return baseClass + "role-major";
+                    else if (hasComponent) return baseClass + "role-minor";
+                    else return baseClass + "role-none";
                 })
-                .attr("class", d => d.baseClass)
                 .on("mouseover", function(event, d) {
-                    tooltip.style("opacity", 1).html(d.properties.deName);
-                    // Nur nach vorne holen, wenn es nicht schon hervorgehoben ist (verhindert Z-Index Bugs)
-                    if (!this.classList.contains("highlighted-both") && !this.classList.contains("highlighted-mining") && !this.classList.contains("highlighted-manufacturing") && !this.classList.contains("highlighted-country")) {
-                        d3.select(this).raise(); 
-                    }
+                    const countryDe = countryTranslations[d.properties.name] || d.properties.name;
+                    tooltip.style("opacity", 1).html(countryDe);
+                    if (!d3.select(this).attr("class").includes("highlighted")) d3.select(this).raise(); 
                 })
                 .on("mousemove", function(event) { tooltip.style("left", (event.pageX + 15) + "px").style("top", (event.pageY - 20) + "px"); })
                 .on("mouseout", function() { tooltip.style("opacity", 0); })
                 .on("click", function(event, d) {
-                    clearMapAndUI();
+                    window.clearMapAndUI();
                     const countryEn = d.properties.name;
-                    els.search.value = d.properties.deName;
+                    document.getElementById("country-search").value = countryTranslations[countryEn] || countryEn;
                     showCountryInfo(countryEn);
                 });
 
-            els.search.addEventListener("input", function(e) {
+            const searchInputObj = document.getElementById("country-search");
+            
+            searchInputObj.addEventListener("input", function(e) {
                 const term = e.target.value.toLowerCase().trim();
-                clearMapAndUI();
+                const resultsContainer = document.getElementById("search-results");
+                
+                window.clearMapAndUI();
 
-                if (term === "") return;
+                if (term === "") { return; }
 
-                els.searchResults.style.display = "block";
-                els.defaultMessage.style.display = "none";
-                els.countryDetails.style.display = "none";
-                els.defaultLegend.style.display = "none";
-                els.searchResults.innerHTML = "<h3>Suchergebnisse:</h3>";
+                resultsContainer.style.display = "block";
+                document.getElementById("default-message").style.display = "none";
+                document.getElementById("country-details").style.display = "none";
+                document.getElementById("default-legend").style.display = "none";
+                resultsContainer.innerHTML = "<h3>Suchergebnisse:</h3>";
 
                 function calcScore(searchTerm, textStr) {
                     if (!textStr) return 0;
@@ -619,7 +1103,7 @@
                 }
 
                 const searchResults = [];
-                cpuValues.forEach(c => {
+                Object.values(cpuData).forEach(c => {
                     let score = Math.max(0, calcScore(term, c.name));
                     if (c.category.toLowerCase().includes(term)) score = Math.max(score, 5);
                     (componentTranslations[c.name] || []).forEach(t => { const s = calcScore(term, t); if (s > 0) score = Math.max(score, s - 1); });
@@ -632,9 +1116,9 @@
                     if (score > 0) searchResults.push({ text: m, typeLabel: "Rohstoff", typeClass: "result-rohstoff", score: score, onClickFn: () => showMineralInfo(m) });
                 });
 
-                data.features.forEach(d => {
+                g.selectAll("path").each(function(d) {
                     const en = d.properties.name;
-                    const de = d.properties.deName;
+                    const de = countryTranslations[en] || en;
                     let score = Math.max(0, calcScore(term, de));
                     const enScore = calcScore(term, en);
                     if (enScore > 0) score = Math.max(score, enScore - 1);
@@ -642,7 +1126,7 @@
                 });
 
                 if (searchResults.length === 0) {
-                    els.searchResults.innerHTML += "<p style='color: #7f8c8d; font-style: italic;'>Keine Treffer gefunden.</p>";
+                    resultsContainer.innerHTML += "<p style='color: #7f8c8d; font-style: italic;'>Keine Treffer gefunden.</p>";
                     return;
                 }
 
@@ -655,33 +1139,35 @@
 
                 uniqueResults.sort((a, b) => b.score !== a.score ? b.score - a.score : a.text.localeCompare(b.text));
                 
-                // PERFORMANCE OPTIMIERUNG: Document Fragment für minimales Reflowing
                 const fragment = document.createDocumentFragment();
                 uniqueResults.forEach(item => {
                     const div = document.createElement("div");
                     div.className = `search-result-item ${item.typeClass}`;
                     div.innerHTML = `<div class="search-type-label">${item.typeLabel}</div>${item.text}`;
                     div.onclick = () => { 
-                        clearMapAndUI();
-                        els.search.value = item.text; 
+                        window.clearMapAndUI();
+                        document.getElementById("country-search").value = item.text; 
                         item.onClickFn(); 
                     };
                     fragment.appendChild(div);
                 });
-                els.searchResults.appendChild(fragment);
+                resultsContainer.appendChild(fragment);
             });
 
         }).catch(function(error) {
-            els.loading.innerText = "Fehler: Keine Internetverbindung oder Datenquelle nicht erreichbar.";
-            els.loading.style.color = "red";
+            document.getElementById("loading").innerText = "Fehler: Keine Internetverbindung oder Datenquelle nicht erreichbar.";
+            document.getElementById("loading").style.color = "red";
         });
 
         window.addEventListener('resize', () => {
-            const newWidth = mapContainer.clientWidth;
-            const newHeight = mapContainer.clientHeight;
+            const newWidth = document.getElementById('map-container').clientWidth;
+            const newHeight = document.getElementById('map-container').clientHeight;
             svg.attr("viewBox", `0 0 ${newWidth} ${newHeight}`);
             zoom.translateExtent([[-newWidth * 0.03, -newHeight * 0.005], [newWidth * 1.03, newHeight * 1.15]]);
         });
+        
+        // Karte direkt rendern, sie ist unterm Overlay sicher
+        window.startMapEngine();
     </script>
 </body>
 </html>
