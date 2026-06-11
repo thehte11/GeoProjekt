@@ -9,18 +9,24 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     
     <style>
-        /* --- ORIGINALES GRUND-DESIGN --- */
+        /* --- OPTIMIERTES DESIGN --- */
+        :root {
+            --bg-body: #f4f7f6; --bg-map: #aadaff; --primary: #3498db; --primary-hover: #2980b9;
+            --secondary: #40BBFF; --text-dark: #2c3e50; --text-light: #7f8c8d;
+            --highlight-mining: #e67e22; --highlight-mfg: #9b59b6; --highlight-both: #e74c3c;
+            --highlight-country: #f1c40f; --white: #ffffff; --border-light: #bdc3c7;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f7f6;
-            display: flex;
-            height: 100vh;
-            height: 100dvh;
-            width: 100vw; 
-            overflow: hidden;
-            overscroll-behavior: none;
+            font-family: 'Segoe UI', Tahoma, Verdana, sans-serif; margin: 0; padding: 0;
+            background-color: var(--bg-body); display: flex; height: 100vh; height: 100dvh;
+            width: 100vw; overflow: hidden; overscroll-behavior: none;
+        }
+
+        /* --- VERSTECKT DIE APP VOR DEM LOGIN --- */
+        body:not(.app-active) > #map-container,
+        body:not(.app-active) > #info-panel {
+            display: none !important;
         }
 
         /* --- AUTHENTIFIZIERUNGS-OVERLAY --- */
@@ -30,201 +36,111 @@
             z-index: 99999999; display: flex; justify-content: center; align-items: center;
         }
         .auth-container {
-            background: #ffffff; padding: 40px; border-radius: 12px;
+            background: var(--white); padding: 40px; border-radius: 12px;
             width: 350px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center;
         }
-        .auth-container h2 { margin-top: 0; color: #2c3e50; }
+        .auth-container h2 { margin-top: 0; color: var(--text-dark); }
         .auth-container input {
-            width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #bdc3c7;
+            width: 100%; padding: 12px; margin: 8px 0; border: 1px solid var(--border-light);
             border-radius: 6px; box-sizing: border-box; font-family: inherit; font-size: 15px; outline: none;
         }
-        .auth-container input:focus { border-color: #3498db; }
+        .auth-container input:focus { border-color: var(--primary); }
         .auth-btn {
-            width: 100%; padding: 12px; margin-top: 10px; background: #3498db;
+            width: 100%; padding: 12px; margin-top: 10px; background: var(--primary);
             color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px; transition: background 0.2s;
         }
-        .auth-btn:hover { background: #2980b9; }
+        .auth-btn:hover { background: var(--primary-hover); }
         .auth-btn-guest { background: #95a5a6; margin-top: 15px; }
         .auth-btn-guest:hover { background: #7f8c8d; }
-        .auth-switch { margin-top: 15px; font-size: 14px; color: #7f8c8d; cursor: pointer; }
-        .auth-switch:hover { color: #3498db; text-decoration: underline; }
+        .auth-switch { margin-top: 15px; font-size: 14px; color: var(--text-light); cursor: pointer; }
+        .auth-switch:hover { color: var(--primary); text-decoration: underline; }
         .auth-message { margin-top: 10px; font-size: 14px; color: #e74c3c; font-weight: bold; min-height: 20px;}
         .verify-box { display: none; margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px; }
 
         /* --- MAP LAYOUT --- */
-        #map-container {
-            flex: 2;
-            background-color: #aadaff;
-            position: relative;
-            cursor: grab;
-            overflow: hidden; 
-        }
-
-        #map-container:active {
-            cursor: grabbing;
-        }
-
-        /* SVG Canvas liegt strikt im Hintergrund */
-        #map-canvas {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 1;
-        }
-        svg { width: 100%; height: 100%; }
+        #map-container { flex: 2; background-color: var(--bg-map); position: relative; cursor: grab; overflow: hidden; }
+        #map-container:active { cursor: grabbing; }
+        #map-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        svg { width: 100%; height: 100%; display: block; }
 
         #loading {
-            position: absolute;
-            top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 1.5rem; color: #2c3e50;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 10px 20px; border-radius: 8px; font-weight: bold;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            text-align: center;
-            z-index: 2000;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 1.5rem; color: var(--text-dark); background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; z-index: 2000;
         }
 
-        /* Suchfeld */
-        #search-container {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            z-index: 999999;
-            pointer-events: auto !important;
-        }
-
+        #search-container { position: absolute; top: 20px; left: 20px; z-index: 999999; pointer-events: auto !important; }
         #country-search {
-            padding: 12px 15px; font-size: 16px; border: 2px solid #3498db;
-            border-radius: 25px; outline: none; box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            width: 260px; transition: width 0.3s ease, box-shadow 0.3s ease;
-            font-family: inherit;
-            pointer-events: auto !important;
-            user-select: text !important;
-            -webkit-user-select: text !important;
-            -moz-user-select: text !important;
-            background: rgba(255, 255, 255, 0.95);
+            padding: 12px 15px; font-size: 16px; border: 2px solid var(--primary); border-radius: 25px; outline: none; box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            width: 260px; transition: width 0.3s ease, box-shadow 0.3s ease; font-family: inherit; pointer-events: auto !important;
+            user-select: text !important; -webkit-user-select: text !important; -moz-user-select: text !important; background: rgba(255, 255, 255, 0.95);
         }
-        #country-search:focus {
-            width: 320px; box-shadow: 0 6px 14px rgba(0,0,0,0.25); border-color: #2980b9;
-            background: #ffffff;
-        }
+        #country-search:focus { width: 320px; box-shadow: 0 6px 14px rgba(0,0,0,0.25); border-color: var(--primary-hover); background: var(--white); }
 
         #default-legend, #map-legend {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 12px 18px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-            font-size: 14px;
-            z-index: 100;
+            position: absolute; bottom: 20px; left: 20px; background: rgba(255, 255, 255, 0.9); padding: 12px 18px;
+            border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.15); font-size: 14px; z-index: 100;
         }
         #map-legend { display: none; }
-
-        .legend-item { display: flex; align-items: center; margin-bottom: 6px; color: #2c3e50; font-weight: bold; }
+        .legend-item { display: flex; align-items: center; margin-bottom: 6px; color: var(--text-dark); font-weight: bold; }
         .legend-item:last-child { margin-bottom: 0; }
-        .legend-color { width: 18px; height: 18px; border-radius: 4px; margin-right: 10px; display: inline-block; border: 1px solid #bdc3c7; }
+        .legend-color { width: 18px; height: 18px; border-radius: 4px; margin-right: 10px; display: inline-block; border: 1px solid var(--border-light); }
 
         /* --- MAP COUNTRIES --- */
-        .country { stroke: #bdc3c7; stroke-width: 0.5px; transition: fill 0.2s ease, stroke-width 0.2s ease; cursor: pointer; }
-
-        .country.role-major { fill: #3498db; }
-        .country.role-minor { fill: #40BBFF; }
+        .country { stroke: var(--border-light); stroke-width: 0.5px; transition: fill 0.2s ease, stroke-width 0.2s ease; cursor: pointer; }
+        .country.role-major { fill: var(--primary); }
+        .country.role-minor { fill: var(--secondary); }
         .country.role-none { fill: #ecf0f1; }
 
-        .highlighted-country { fill: #f1c40f !important; stroke: #ffffff !important; stroke-width: 2.5px !important; }
-        .highlighted-mining { fill: #e67e22 !important; stroke: #ffffff !important; stroke-width: 2.5px !important; }
-        .highlighted-manufacturing { fill: #9b59b6 !important; stroke: #ffffff !important; stroke-width: 2.5px !important; }
-        .highlighted-both { fill: #e74c3c !important; stroke: #ffffff !important; stroke-width: 2.5px !important; }
+        .highlighted-country { fill: var(--highlight-country) !important; stroke: var(--white) !important; stroke-width: 2.5px !important; }
+        .highlighted-mining { fill: var(--highlight-mining) !important; stroke: var(--white) !important; stroke-width: 2.5px !important; }
+        .highlighted-manufacturing { fill: var(--highlight-mfg) !important; stroke: var(--white) !important; stroke-width: 2.5px !important; }
+        .highlighted-both { fill: var(--highlight-both) !important; stroke: var(--white) !important; stroke-width: 2.5px !important; }
 
-        .country.role-major:hover, .country.role-minor:hover { fill: #e74c3c !important; stroke: #ffffff; stroke-width: 2.5px; }
-        .country.role-none:hover { fill: #d5dbdb !important; stroke: #ffffff; stroke-width: 1.5px; }
+        .country.role-major:hover, .country.role-minor:hover { fill: var(--highlight-both) !important; stroke: var(--white); stroke-width: 2.5px; }
+        .country.role-none:hover { fill: #d5dbdb !important; stroke: var(--white); stroke-width: 1.5px; }
 
         /* --- Info Panel --- */
         #info-panel {
-            flex: 1; background-color: #ffffff; padding: 30px;
-            box-shadow: -5px 0 15px rgba(0,0,0,0.1); overflow-y: auto;
-            min-width: 380px; max-width: 450px; box-sizing: border-box;
-            position: relative; z-index: 10000; 
-            display: flex; /* Flexbox hinzugefügt für Layout */
-            flex-direction: column; /* Flex-Richtung */
+            flex: 1; background-color: var(--white); padding: 30px; box-shadow: -5px 0 15px rgba(0,0,0,0.1); overflow-y: auto;
+            min-width: 380px; max-width: 450px; box-sizing: border-box; position: relative; z-index: 10000; display: flex; flex-direction: column;
         }
 
-        h1 { font-size: 1.6em; color: #2c3e50; margin-top: 0; margin-bottom: 15px; }
+        h1 { font-size: 1.6em; color: var(--text-dark); margin-top: 0; margin-bottom: 15px; }
         
-        /* Auth Bar oben im Panel */
         #auth-status-bar {
             display: flex; justify-content: space-between; align-items: center; 
             margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee;
         }
-        #user-greeting { color: #3498db; font-weight: bold; margin: 0; font-size: 0.9em; }
-
+        #user-greeting { color: var(--primary); font-weight: bold; margin: 0; font-size: 0.9em; }
         .info-section { display: none; margin-top: 25px; }
-        
-        #default-message { color: #7f8c8d; font-style: italic; margin-top: 10px; background: #fdf2f0; padding: 15px; border-radius: 5px;}
-
+        #default-message { color: var(--text-light); font-style: italic; margin-top: 10px; background: #fdf2f0; padding: 15px; border-radius: 5px;}
         #search-results { display: none; margin-top: 20px; }
-        #search-results h3 { color: #2c3e50; font-size: 1.2em; margin-bottom: 10px; }
-        .search-result-item {
-            padding: 12px 15px; margin-bottom: 8px; background-color: #f9f9f9;
-            border: 1px solid #e0e0e0; border-radius: 5px; cursor: pointer;
-            transition: all 0.2s ease; font-size: 14px; color: #2c3e50;
-        }
-        .search-result-item:hover { background-color: #eaf2f8; border-color: #bdc3c7; }
-        .search-result-item.result-land { border-left: 5px solid #3498db; }
-        .search-result-item.result-bauteil { border-left: 5px solid #9b59b6; }
-        .search-result-item.result-rohstoff { border-left: 5px solid #e67e22; }
+        .search-result-item { padding: 12px 15px; margin-bottom: 8px; background-color: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 5px; cursor: pointer; transition: all 0.2s ease; font-size: 14px; color: var(--text-dark); }
+        .search-result-item:hover { background-color: #eaf2f8; border-color: var(--border-light); }
+        .search-result-item.result-land { border-left: 5px solid var(--primary); }
+        .search-result-item.result-bauteil { border-left: 5px solid var(--highlight-mfg); }
+        .search-result-item.result-rohstoff { border-left: 5px solid var(--highlight-mining); }
+        .search-type-label { font-size: 0.8em; color: var(--text-light); text-transform: uppercase; font-weight: bold; margin-bottom: 3px; }
 
-        .search-type-label { font-size: 0.8em; color: #7f8c8d; text-transform: uppercase; font-weight: bold; margin-bottom: 3px; }
+        .clickable-tag, .text-link-tag { display: inline-block; background-color: #eaf2f8; color: var(--primary-hover); padding: 5px 12px; margin: 4px 6px 4px 0; border-radius: 20px; font-size: 0.9em; cursor: pointer; transition: all 0.2s ease; border: 1px solid #a9cce3; font-weight: 500; }
+        .clickable-tag:hover, .text-link-tag:hover { background-color: var(--primary); color: var(--white); }
 
-        .clickable-tag {
-            display: inline-block; background-color: #eaf2f8; color: #2980b9;
-            padding: 5px 12px; margin: 4px 6px 4px 0; border-radius: 20px;
-            font-size: 0.9em; cursor: pointer; transition: all 0.2s ease;
-            border: 1px solid #a9cce3; font-weight: 500;
-        }
-        .clickable-tag:hover { background-color: #3498db; color: #ffffff; border-color: #2980b9; transform: translateY(-1px); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-
-        .text-link-tag { background-color: #eaf2f8; color: #2980b9; padding: 2px 5px; border-radius: 4px; cursor: pointer; transition: all 0.2s ease; border: 1px solid #a9cce3; font-weight: 600; white-space: nowrap; }
-        .text-link-tag:hover { background-color: #3498db; color: #ffffff; border-color: #2980b9; }
-
-        /* Bookmark & Notizen */
         .bookmark-btn { font-size: 1.2em; cursor: pointer; transition: transform 0.2s; user-select: none; }
         .bookmark-btn:hover { transform: scale(1.2); }
-        #collection-btn {
-            background: #f1c40f; color: #2c3e50; border: none; padding: 10px; border-radius: 6px;
-            font-weight: bold; cursor: pointer; margin-bottom: 15px; font-size: 15px; display: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 100%;
-        }
+        #collection-btn { background: #f1c40f; color: #2c3e50; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-bottom: 15px; font-size: 15px; display: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 100%; }
         #collection-btn:hover { background: #f39c12; }
 
-        #tooltip {
-            position: absolute; background: rgba(44, 62, 80, 0.9); color: white;
-            padding: 6px 12px; border-radius: 4px; pointer-events: none;
-            font-size: 14px; opacity: 0; transition: opacity 0.2s; font-weight: bold; z-index: 20000;
-        }
-
-        /* --- Impressum Styling --- */
-        #impressum {
-            margin-top: auto; /* Drückt das Impressum nach unten */
-            padding-top: 30px;
-            font-size: 0.85em;
-            color: #7f8c8d;
-            line-height: 1.6;
-        }
-        #impressum a { color: #3498db; text-decoration: none; }
-        #impressum a:hover { text-decoration: underline; }
+        #tooltip { position: absolute; background: rgba(44, 62, 80, 0.9); color: white; padding: 6px 12px; border-radius: 4px; pointer-events: none; font-size: 14px; opacity: 0; transition: opacity 0.2s; font-weight: bold; z-index: 20000; }
+        #impressum { margin-top: auto; padding-top: 30px; font-size: 0.85em; color: var(--text-light); line-height: 1.6; }
+        #impressum a { color: var(--primary); text-decoration: none; }
 
         @media (max-width: 768px) {
             body { flex-direction: column; height: auto; overflow: auto; }
             #map-container { flex: none; height: 40vh; width: 100%; }
             #info-panel { flex: none; width: 100%; max-width: 100%; min-width: 0; padding: 15px; overflow-y: visible; }
-            h1 { font-size: 1.3em; margin-bottom: 10px; }
-            #tooltip { display: none !important; }
             #search-container { top: 10px; left: 10px; right: 10px; }
             #country-search { width: 100%; box-sizing: border-box; }
-            #country-search:focus { width: 100%; }
-            #default-legend, #map-legend { bottom: 10px; left: 10px; font-size: 12px; padding: 8px; }
-            #impressum { padding-top: 20px; padding-bottom: 20px; }
         }
     </style>
 </head>
@@ -248,15 +164,24 @@
                 <input type="text" id="reg-vorname" placeholder="Vorname">
                 <input type="email" id="reg-email" placeholder="E-Mail Adresse">
                 <input type="password" id="reg-pass" placeholder="Passwort (min. 6 Zeichen)">
+                <input type="tel" id="reg-phone" placeholder="Handynummer (Optional, z.B. +49...)">
                 <button class="auth-btn" id="btn-register">Code senden & Registrieren</button>
             </div>
             
             <div class="verify-box" id="verify-box">
-                <p style="font-size: 14px; color: #27ae60;">Ein Code wurde an deine E-Mail gesendet!</p>
-                <input type="text" id="verify-code-input" placeholder="6-stelliger Code eingeben">
-                <button class="auth-btn" id="btn-verify">Bestätigen</button>
+                <p style="font-size: 14px; color: #27ae60;">Ein E-Mail Code wurde gesendet!</p>
+                <input type="text" id="verify-code-input" placeholder="6-stelliger E-Mail Code">
+                <button class="auth-btn" id="btn-verify">E-Mail Bestätigen</button>
             </div>
 
+            <div class="verify-box" id="phone-verify-box">
+                <p style="font-size: 14px; color: #2980b9;">Ein SMS-Code wurde gesendet!</p>
+                <input type="text" id="verify-sms-input" placeholder="6-stelliger SMS Code">
+                <button class="auth-btn" id="btn-verify-sms">SMS Bestätigen</button>
+                <div class="auth-switch" onclick="location.reload()">Überspringen & zur App</div>
+            </div>
+
+            <div id="recaptcha-container"></div>
             <div class="auth-message" id="reg-msg"></div>
             <div class="auth-switch" onclick="toggleAuth(false)">Bereits registriert? Anmelden.</div>
         </div>
@@ -264,23 +189,17 @@
 
     <div id="map-container">
         <div id="map-canvas"></div>
-        
-        <div id="search-container">
-            <input type="text" id="country-search" placeholder="Land, Bauteil oder Mineral suchen..." autocomplete="off">
-        </div>
-        
+        <div id="search-container"><input type="text" id="country-search" placeholder="Land, Bauteil oder Mineral suchen..." autocomplete="off"></div>
         <div id="default-legend">
-            <div class="legend-item"><span class="legend-color" style="background: #3498db;"></span> Hauptakteur (Detaillierte Infos)</div>
-            <div class="legend-item"><span class="legend-color" style="background: #40BBFF;"></span> Beteiligt (Liefert Rohstoffe/Bauteile)</div>
+            <div class="legend-item"><span class="legend-color" style="background: var(--primary);"></span> Hauptakteur (Detaillierte Infos)</div>
+            <div class="legend-item"><span class="legend-color" style="background: var(--secondary);"></span> Beteiligt (Liefert Rohstoffe/Bauteile)</div>
             <div class="legend-item"><span class="legend-color" style="background: #ecf0f1;"></span> Keine erfasste Rolle</div>
         </div>
-
         <div id="map-legend">
-            <div class="legend-item"><span class="legend-color" style="background: #e67e22;"></span> Rohstoff-Abbau (Fördern)</div>
-            <div class="legend-item"><span class="legend-color" style="background: #9b59b6;"></span> Verarbeitung & Montage</div>
-            <div class="legend-item"><span class="legend-color" style="background: #e74c3c;"></span> Beides (Abbau & Montage)</div>
+            <div class="legend-item"><span class="legend-color" style="background: var(--highlight-mining);"></span> Rohstoff-Abbau (Fördern)</div>
+            <div class="legend-item"><span class="legend-color" style="background: var(--highlight-mfg);"></span> Verarbeitung & Montage</div>
+            <div class="legend-item"><span class="legend-color" style="background: var(--highlight-both);"></span> Beides (Abbau & Montage)</div>
         </div>
-
         <div id="loading">Lade Weltkarte...</div>
         <div id="tooltip"></div>
     </div>
@@ -293,24 +212,15 @@
         </div>
 
         <h1>Schul-Projekt: Die globale Smartphone-Lieferkette</h1>
-        
         <button id="collection-btn">⭐ Meine Sammlung & Notizen</button>
         
-        <div id="default-message">
-            Klicke auf ein Land oder suche nach Bauteilen/Rohstoffen, um die echten, weltweiten Transportwege der Logistikbranche zu analysieren.
-        </div>
-
+        <div id="default-message">Klicke auf ein Land oder suche nach Bauteilen/Rohstoffen, um die Transportwege zu analysieren.</div>
         <div id="search-results"></div>
-
         <div id="country-details" class="info-section"></div>
 
         <div id="impressum">
-            <strong>Impressum:</strong><br><br>
-            erstellt von:<br>
-            - Theo Eckert<br>
-            - Alexej Schreiner<br><br>
-            Open Source Karte:<br>
-            GitHub Karte: <a href="https://github.com/holtzy/D3-graph-gallery" target="_blank">https://github.com/holtzy/D3-graph-gallery</a><br>
+            <strong>Impressum:</strong><br><br>erstellt von:<br>- Theo Eckert<br>- Alexej Schreiner<br><br>
+            Open Source Karte:<br>GitHub Karte: <a href="https://github.com/holtzy/D3-graph-gallery" target="_blank">https://github.com/holtzy/D3-graph-gallery</a><br>
             D3 Datenbank: <a href="https://d3js.org/d3.v7.min.js" target="_blank">https://d3js.org/d3.v7.min.js</a><br><br>
             Email: <a href="mailto:Geo.projekt1@emailn.de">Geo.projekt1@emailn.de</a>
         </div>
@@ -318,10 +228,9 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile, signOut, RecaptchaVerifier, linkWithPhoneNumber } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
-        // FIREBASE PROJEKT: geo-projekt-b86e7
         const firebaseConfig = {
             apiKey: "AIzaSyBwiYRYB0MZ1-SUTtdETCphTTDV_LIW4Vw",
             authDomain: "geo-projekt-b86e7.firebaseapp.com",
@@ -335,7 +244,6 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // EMAILJS DATEN
         emailjs.init("nopyo_6xb4xN_cWdW");
         const EMAILJS_SERVICE_ID = "service_u23gqgg";
         const EMAILJS_TEMPLATE_ID = "template_i3ekbea";
@@ -344,7 +252,6 @@
         window.userData = { notes: {}, bookmarks: [] };
         let generatedCode = null;
 
-        // DATENBANK FUNKTIONEN
         async function loadUserData(uid) {
             try {
                 const docRef = doc(db, "users", uid);
@@ -361,12 +268,10 @@
 
         window.saveUserData = async () => {
             if(!window.currentUser) return;
-            try {
-                await setDoc(doc(db, "users", window.currentUser.uid), window.userData);
-            } catch(e) { console.error("Speichern fehlgeschlagen", e); }
+            try { await setDoc(doc(db, "users", window.currentUser.uid), window.userData); } 
+            catch(e) { console.error("Speichern fehlgeschlagen", e); }
         }
 
-        // LOGIN / REGISTRIERUNG LOGIK
         window.toggleAuth = (showReg) => {
             document.getElementById('login-box').style.display = showReg ? 'none' : 'block';
             document.getElementById('register-box').style.display = showReg ? 'block' : 'none';
@@ -380,7 +285,7 @@
             if(!vorname || email.length < 5 || pw.length < 6) return document.getElementById('reg-msg').innerText = "Bitte alle Felder korrekt ausfüllen (PW min. 6 Zeichen).";
 
             generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
-            document.getElementById('reg-msg').style.color = "#2c3e50";
+            document.getElementById('reg-msg').style.color = "var(--text-dark)";
             document.getElementById('reg-msg').innerText = "Sende E-Mail... Bitte warten.";
 
             emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, { vorname: vorname, email: email, code: generatedCode })
@@ -391,23 +296,53 @@
             }).catch((err) => { 
                 document.getElementById('reg-msg').style.color = "#e74c3c";
                 document.getElementById('reg-msg').innerText = "E-Mail Fehler! Bitte überprüfe die Konsole."; 
-                console.error(err);
             });
         };
 
         document.getElementById('btn-verify').onclick = async () => {
             if(document.getElementById('verify-code-input').value !== generatedCode) {
                 document.getElementById('reg-msg').style.color = "#e74c3c";
-                return document.getElementById('reg-msg').innerText = "Falscher Code!";
+                return document.getElementById('reg-msg').innerText = "Falscher E-Mail Code!";
             }
             try {
                 const email = document.getElementById('reg-email').value;
                 const pw = document.getElementById('reg-pass').value;
                 const vorname = document.getElementById('reg-vorname').value;
+                const phone = document.getElementById('reg-phone').value;
+
+                document.getElementById('reg-msg').innerText = "Erstelle Account...";
                 const userCred = await createUserWithEmailAndPassword(auth, email, pw);
                 await updateProfile(userCred.user, { displayName: vorname });
-                location.reload(); 
-            } catch (e) { document.getElementById('reg-msg').innerText = "Fehler: " + e.message; }
+                
+                if (phone && phone.trim() !== "") {
+                    document.getElementById('verify-box').style.display = 'none';
+                    document.getElementById('phone-verify-box').style.display = 'block';
+                    document.getElementById('reg-msg').style.color = "var(--text-dark)";
+                    document.getElementById('reg-msg').innerText = "Bereite SMS-Versand vor...";
+
+                    window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { 'size': 'invisible' });
+                    window.confirmationResult = await linkWithPhoneNumber(userCred.user, phone, window.recaptchaVerifier);
+                    
+                    document.getElementById('reg-msg').style.color = "#27ae60";
+                    document.getElementById('reg-msg').innerText = "SMS gesendet! Bitte Code eingeben.";
+                } else {
+                    location.reload(); 
+                }
+            } catch (e) { 
+                document.getElementById('reg-msg').style.color = "#e74c3c";
+                document.getElementById('reg-msg').innerText = "Fehler: " + e.message; 
+            }
+        };
+
+        document.getElementById('btn-verify-sms').onclick = async () => {
+            const smsCode = document.getElementById('verify-sms-input').value;
+            try {
+                await window.confirmationResult.confirm(smsCode);
+                location.reload();
+            } catch (e) {
+                document.getElementById('reg-msg').style.color = "#e74c3c";
+                document.getElementById('reg-msg').innerText = "Falscher SMS Code. " + e.message;
+            }
         };
 
         document.getElementById('btn-login').onclick = () => {
@@ -419,6 +354,7 @@
 
         window.continueAsGuest = () => {
             document.getElementById('auth-overlay').style.display = 'none';
+            document.body.classList.add('app-active');
             document.getElementById('user-greeting').innerText = "Gastmodus (Notizen deaktiviert)";
             document.getElementById('top-login-btn').style.display = 'block';
             document.getElementById('top-logout-btn').style.display = 'none';
@@ -431,6 +367,7 @@
                 window.currentUser = user;
                 await loadUserData(user.uid); 
                 document.getElementById('auth-overlay').style.display = 'none';
+                document.body.classList.add('app-active');
                 document.getElementById('user-greeting').innerText = "Eingeloggt als: " + (user.displayName || "Nutzer");
                 document.getElementById('top-login-btn').style.display = 'none';
                 document.getElementById('top-logout-btn').style.display = 'block';
@@ -438,10 +375,10 @@
             } else {
                 window.currentUser = null;
                 document.getElementById('auth-overlay').style.display = 'flex';
+                document.body.classList.remove('app-active');
             }
         });
 
-        // NOTIZEN SPEICHERN FÜR EINZELNE ELEMENTE
         window.saveItemNote = async (title) => {
             if (!window.currentUser) return alert("Nur für angemeldete Nutzer verfügbar!");
             if (typeof window.userData.notes !== "object") window.userData.notes = {};
@@ -452,7 +389,6 @@
             setTimeout(() => document.getElementById(`msg-${safeTitle}`).innerText = "", 2000);
         };
 
-        // LESEZEICHEN TOGGLE
         window.toggleBookmark = async (title) => {
             if(!window.currentUser) return alert("Nur für angemeldete Nutzer verfügbar!");
             const isBookmarked = window.userData.bookmarks.includes(title);
@@ -462,7 +398,6 @@
             document.getElementById('btn-star').innerText = isBookmarked ? '☆' : '⭐';
         };
 
-        // SAMMLUNG ANZEIGEN
         document.getElementById('collection-btn').onclick = () => {
             if(typeof window.clearMapAndUI === "function") window.clearMapAndUI();
             const container = document.getElementById("country-details");
@@ -508,15 +443,11 @@
     </script>
 
     <script>
-        // --- Klick-Bugfix: Verhindert, dass die Map Klicks auf das Suchfeld stiehlt ---
         const searchInputObj = document.getElementById("country-search");
         ['mousedown', 'mouseup', 'click', 'touchstart', 'touchend', 'pointerdown', 'pointerup', 'keydown', 'keyup', 'keypress'].forEach(evt => {
             searchInputObj.addEventListener(evt, (e) => e.stopPropagation());
         });
 
-        let countryCentroids = {};
-
-        // Wörterbuch für die Übersetzung von GeoJSON (Englisch) zu Deutsch
         const countryTranslations = {
             "Afghanistan": "Afghanistan", "Albania": "Albanien", "Algeria": "Algerien", "Angola": "Angola", "Antarctica": "Antarktis", "Argentina": "Argentinien", "Armenia": "Armenien", "Australia": "Australien", "Austria": "Österreich", "Azerbaijan": "Aserbaidschan",
             "Bahamas": "Bahamas", "Bangladesh": "Bangladesch", "Belarus": "Belarus", "Belgium": "Belgien", "Belize": "Belize", "Benin": "Benin", "Bhutan": "Bhutan", "Bolivia": "Bolivien", "Bosnia and Herz.": "Bosnien und Herzegowina", "Botswana": "Botsuana", "Brazil": "Brasilien", "Brunei": "Brunei", "Bulgaria": "Bulgarien", "Burkina Faso": "Burkina Faso", "Burundi": "Burundi",
@@ -843,6 +774,30 @@
             }).join(" ");
         }
 
+        // --- MAP ENGINE START ---
+        const width = 1000;
+        const height = 600;
+
+        const svg = d3.select("#map-canvas")
+            .append("svg")
+            .attr("viewBox", `0 0 ${width} ${height}`)
+            .attr("preserveAspectRatio", "xMidYMid meet")
+            .on("click", function(event) {
+                if (event.target.tagName.toLowerCase() === 'svg') {
+                    document.getElementById("country-search").value = "";
+                    window.clearMapAndUI();
+                }
+            });
+
+        const g = svg.append("g");
+        const projection = d3.geoMercator().scale(140).translate([width / 2, height / 1.5]);
+        const path = d3.geoPath().projection(projection);
+        const tooltip = d3.select("#tooltip");
+
+        const zoom = d3.zoom().scaleExtent([1, 8]).translateExtent([[-width * 0.1, -height * 0.1], [width * 1.1, height * 1.2]]) 
+            .on("zoom", (event) => { g.attr("transform", event.transform); });
+        svg.call(zoom);
+
         window.clearMapAndUI = function() {
             g.selectAll("path").classed("highlighted-country highlighted-mining highlighted-manufacturing highlighted-both", false);
             document.getElementById("map-legend").style.display = "none";
@@ -907,7 +862,6 @@
             document.getElementById("map-legend").style.display = "block";
         }
 
-        // --- HIER WIRD DAS INDIVIDUELLE NOTIZFELD ERSTELLT ---
         function renderDetails(title, sections) {
             document.getElementById("default-message").style.display = "none";
             document.getElementById("search-results").style.display = "none";
@@ -1015,30 +969,6 @@
             ]);
         }
 
-        // --- D3 Setup & Map Engine ---
-        const width = document.getElementById('map-container').clientWidth;
-        const height = document.getElementById('map-container').clientHeight;
-
-        const svg = d3.select("#map-canvas")
-            .append("svg")
-            .attr("viewBox", `0 0 ${width} ${height}`)
-            .attr("preserveAspectRatio", "xMidYMid meet")
-            .on("click", function(event) {
-                if (event.target.tagName.toLowerCase() === 'svg') {
-                    document.getElementById("country-search").value = "";
-                    window.clearMapAndUI();
-                }
-            });
-
-        const g = svg.append("g");
-        const projection = d3.geoMercator().scale(width / 6).translate([width / 2, height / 1.5]);
-        const path = d3.geoPath().projection(projection);
-        const tooltip = d3.select("#tooltip");
-
-        const zoom = d3.zoom().scaleExtent([1, 8]).translateExtent([[-width * 0.03, -height * 0.005], [width * 1.03, height * 1.15]]) 
-            .on("zoom", (event) => { g.attr("transform", event.transform); });
-        svg.call(zoom);
-
         // Echte Weltkarte ONLINE abrufen
         d3.json("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson").then(function(data) {
             document.getElementById("loading").style.display = "none";
@@ -1047,12 +977,6 @@
                 .attr("class", function(d) {
                     const countryEn = d.properties.name;
                     const countryDe = countryTranslations[countryEn] || countryEn;
-                    
-                    const geoCenter = d3.geoCentroid(d);
-                    if(geoCenter && !isNaN(geoCenter[0])) { 
-                        countryCentroids[countryEn] = geoCenter; 
-                        countryCentroids[countryDe] = geoCenter; 
-                    }
                     
                     const hasNarrative = !!(countryNarratives[countryEn] || countryNarratives[countryDe]);
                     const compInfo = getCountryInfo(countryDe);
@@ -1158,16 +1082,6 @@
             document.getElementById("loading").innerText = "Fehler: Keine Internetverbindung oder Datenquelle nicht erreichbar.";
             document.getElementById("loading").style.color = "red";
         });
-
-        window.addEventListener('resize', () => {
-            const newWidth = document.getElementById('map-container').clientWidth;
-            const newHeight = document.getElementById('map-container').clientHeight;
-            svg.attr("viewBox", `0 0 ${newWidth} ${newHeight}`);
-            zoom.translateExtent([[-newWidth * 0.03, -newHeight * 0.005], [newWidth * 1.03, newHeight * 1.15]]);
-        });
-        
-        // Karte direkt rendern, sie ist unterm Overlay sicher
-        window.startMapEngine();
     </script>
 </body>
 </html>
