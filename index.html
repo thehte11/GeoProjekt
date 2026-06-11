@@ -23,7 +23,7 @@
             width: 100vw; overflow: hidden; overscroll-behavior: none;
         }
 
-        /* --- VERSTECKT DIE KARTE VOR DEM LOGIN --- */
+        /* --- VERSTECKT DIE APP VOR DEM LOGIN --- */
         body:not(.app-active) > #map-container,
         body:not(.app-active) > #info-panel {
             display: none !important;
@@ -55,14 +55,13 @@
         .auth-switch { margin-top: 15px; font-size: 14px; color: var(--text-light); cursor: pointer; }
         .auth-switch:hover { color: var(--primary); text-decoration: underline; }
         .auth-message { margin-top: 10px; font-size: 14px; color: #e74c3c; font-weight: bold; min-height: 20px;}
-        
         .verify-box { display: none; margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px; }
 
         /* --- MAP LAYOUT --- */
         #map-container { flex: 2; background-color: var(--bg-map); position: relative; cursor: grab; overflow: hidden; }
         #map-container:active { cursor: grabbing; }
         #map-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
-        svg { width: 100%; height: 100%; }
+        svg { width: 100%; height: 100%; display: block; }
 
         #loading {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -97,6 +96,7 @@
         .highlighted-mining { fill: var(--highlight-mining) !important; stroke: var(--white) !important; stroke-width: 2.5px !important; }
         .highlighted-manufacturing { fill: var(--highlight-mfg) !important; stroke: var(--white) !important; stroke-width: 2.5px !important; }
         .highlighted-both { fill: var(--highlight-both) !important; stroke: var(--white) !important; stroke-width: 2.5px !important; }
+
         .country.role-major:hover, .country.role-minor:hover { fill: var(--highlight-both) !important; stroke: var(--white); stroke-width: 2.5px; }
         .country.role-none:hover { fill: #d5dbdb !important; stroke: var(--white); stroke-width: 1.5px; }
 
@@ -105,6 +105,7 @@
             flex: 1; background-color: var(--white); padding: 30px; box-shadow: -5px 0 15px rgba(0,0,0,0.1); overflow-y: auto;
             min-width: 380px; max-width: 450px; box-sizing: border-box; position: relative; z-index: 10000; display: flex; flex-direction: column;
         }
+
         h1 { font-size: 1.6em; color: var(--text-dark); margin-top: 0; margin-bottom: 15px; }
         
         #auth-status-bar {
@@ -129,6 +130,7 @@
         .bookmark-btn:hover { transform: scale(1.2); }
         #collection-btn { background: #f1c40f; color: #2c3e50; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-bottom: 15px; font-size: 15px; display: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 100%; }
         #collection-btn:hover { background: #f39c12; }
+
         #tooltip { position: absolute; background: rgba(44, 62, 80, 0.9); color: white; padding: 6px 12px; border-radius: 4px; pointer-events: none; font-size: 14px; opacity: 0; transition: opacity 0.2s; font-weight: bold; z-index: 20000; }
         #impressum { margin-top: auto; padding-top: 30px; font-size: 0.85em; color: var(--text-light); line-height: 1.6; }
         #impressum a { color: var(--primary); text-decoration: none; }
@@ -167,13 +169,13 @@
             </div>
             
             <div class="verify-box" id="verify-box">
-                <p style="font-size: 14px; color: #27ae60;">Ein Code wurde an deine E-Mail gesendet!</p>
+                <p style="font-size: 14px; color: #27ae60;">Ein E-Mail Code wurde gesendet!</p>
                 <input type="text" id="verify-code-input" placeholder="6-stelliger E-Mail Code">
                 <button class="auth-btn" id="btn-verify">E-Mail Bestätigen</button>
             </div>
 
             <div class="verify-box" id="phone-verify-box">
-                <p style="font-size: 14px; color: #2980b9;">Fast fertig! Ein SMS-Code wurde gesendet.</p>
+                <p style="font-size: 14px; color: #2980b9;">Ein SMS-Code wurde gesendet!</p>
                 <input type="text" id="verify-sms-input" placeholder="6-stelliger SMS Code">
                 <button class="auth-btn" id="btn-verify-sms">SMS Bestätigen</button>
                 <div class="auth-switch" onclick="location.reload()">Überspringen & zur App</div>
@@ -187,18 +189,16 @@
 
     <div id="map-container">
         <div id="map-canvas"></div>
-        <div id="search-container">
-            <input type="text" id="country-search" placeholder="Land, Bauteil oder Mineral suchen..." autocomplete="off">
-        </div>
+        <div id="search-container"><input type="text" id="country-search" placeholder="Land, Bauteil oder Mineral suchen..." autocomplete="off"></div>
         <div id="default-legend">
-            <div class="legend-item"><span class="legend-color" style="background: #3498db;"></span> Hauptakteur (Detaillierte Infos)</div>
-            <div class="legend-item"><span class="legend-color" style="background: #40BBFF;"></span> Beteiligt (Liefert Rohstoffe/Bauteile)</div>
+            <div class="legend-item"><span class="legend-color" style="background: var(--primary);"></span> Hauptakteur (Detaillierte Infos)</div>
+            <div class="legend-item"><span class="legend-color" style="background: var(--secondary);"></span> Beteiligt (Liefert Rohstoffe/Bauteile)</div>
             <div class="legend-item"><span class="legend-color" style="background: #ecf0f1;"></span> Keine erfasste Rolle</div>
         </div>
         <div id="map-legend">
-            <div class="legend-item"><span class="legend-color" style="background: #e67e22;"></span> Rohstoff-Abbau (Fördern)</div>
-            <div class="legend-item"><span class="legend-color" style="background: #9b59b6;"></span> Verarbeitung & Montage</div>
-            <div class="legend-item"><span class="legend-color" style="background: #e74c3c;"></span> Beides (Abbau & Montage)</div>
+            <div class="legend-item"><span class="legend-color" style="background: var(--highlight-mining);"></span> Rohstoff-Abbau (Fördern)</div>
+            <div class="legend-item"><span class="legend-color" style="background: var(--highlight-mfg);"></span> Verarbeitung & Montage</div>
+            <div class="legend-item"><span class="legend-color" style="background: var(--highlight-both);"></span> Beides (Abbau & Montage)</div>
         </div>
         <div id="loading">Lade Weltkarte...</div>
         <div id="tooltip"></div>
@@ -268,9 +268,8 @@
 
         window.saveUserData = async () => {
             if(!window.currentUser) return;
-            try {
-                await setDoc(doc(db, "users", window.currentUser.uid), window.userData);
-            } catch(e) { console.error("Speichern fehlgeschlagen", e); }
+            try { await setDoc(doc(db, "users", window.currentUser.uid), window.userData); } 
+            catch(e) { console.error("Speichern fehlgeschlagen", e); }
         }
 
         window.toggleAuth = (showReg) => {
@@ -278,7 +277,6 @@
             document.getElementById('register-box').style.display = showReg ? 'block' : 'none';
         };
 
-        // SCHRITT 1: Registrierung starten & Email senden
         document.getElementById('btn-register').onclick = () => {
             const email = document.getElementById('reg-email').value;
             const pw = document.getElementById('reg-pass').value;
@@ -301,7 +299,6 @@
             });
         };
 
-        // SCHRITT 2: E-Mail Code prüfen & Account erstellen (dann ggf. SMS)
         document.getElementById('btn-verify').onclick = async () => {
             if(document.getElementById('verify-code-input').value !== generatedCode) {
                 document.getElementById('reg-msg').style.color = "#e74c3c";
@@ -317,7 +314,6 @@
                 const userCred = await createUserWithEmailAndPassword(auth, email, pw);
                 await updateProfile(userCred.user, { displayName: vorname });
                 
-                // Falls Handynummer angegeben -> SMS Verifizierung starten
                 if (phone && phone.trim() !== "") {
                     document.getElementById('verify-box').style.display = 'none';
                     document.getElementById('phone-verify-box').style.display = 'block';
@@ -338,7 +334,6 @@
             }
         };
 
-        // SCHRITT 3: SMS Code bestätigen
         document.getElementById('btn-verify-sms').onclick = async () => {
             const smsCode = document.getElementById('verify-sms-input').value;
             try {
@@ -365,7 +360,6 @@
             document.getElementById('top-logout-btn').style.display = 'none';
             document.getElementById('collection-btn').style.display = 'none';
             window.currentUser = null;
-            setTimeout(() => { if (typeof window.startMapEngine === "function") window.startMapEngine(); }, 50);
         };
 
         onAuthStateChanged(auth, async (user) => {
@@ -378,7 +372,6 @@
                 document.getElementById('top-login-btn').style.display = 'none';
                 document.getElementById('top-logout-btn').style.display = 'block';
                 document.getElementById('collection-btn').style.display = 'block'; 
-                setTimeout(() => { if (typeof window.startMapEngine === "function") window.startMapEngine(); }, 50);
             } else {
                 window.currentUser = null;
                 document.getElementById('auth-overlay').style.display = 'flex';
@@ -781,331 +774,314 @@
             }).join(" ");
         }
 
-        let mapInitialized = false;
+        // --- MAP ENGINE START ---
+        const width = 1000;
+        const height = 600;
 
-        window.startMapEngine = function() {
-            if(mapInitialized) return;
-            mapInitialized = true;
-
-            const width = document.getElementById('map-container').clientWidth;
-            const height = document.getElementById('map-container').clientHeight;
-
-            const svg = d3.select("#map-canvas")
-                .append("svg")
-                .attr("viewBox", `0 0 ${width} ${height}`)
-                .attr("preserveAspectRatio", "xMidYMid meet")
-                .on("click", function(event) {
-                    if (event.target.tagName.toLowerCase() === 'svg') {
-                        document.getElementById("country-search").value = "";
-                        window.clearMapAndUI();
-                    }
-                });
-
-            const g = svg.append("g");
-            const projection = d3.geoMercator().scale(width / 6).translate([width / 2, height / 1.5]);
-            const path = d3.geoPath().projection(projection);
-            const tooltip = d3.select("#tooltip");
-
-            const zoom = d3.zoom().scaleExtent([1, 8]).translateExtent([[-width * 0.03, -height * 0.005], [width * 1.03, height * 1.15]]) 
-                .on("zoom", (event) => { g.attr("transform", event.transform); });
-            svg.call(zoom);
-
-            window.clearMapAndUI = function() {
-                g.selectAll("path").classed("highlighted-country highlighted-mining highlighted-manufacturing highlighted-both", false);
-                document.getElementById("map-legend").style.display = "none";
-                document.getElementById("default-legend").style.display = "block";
-                document.getElementById("search-results").style.display = "none";
-                document.getElementById("country-details").style.display = "none";
-                document.getElementById("default-message").style.display = "block";
-            };
-
-            window.handleTagClick = function(type, value) {
-                window.clearMapAndUI(); 
-                document.getElementById("country-search").value = value;
-                
-                if (type === 'mineral') showMineralInfo(value);
-                else if (type === 'country') {
-                    let enName = Object.keys(countryTranslations).find(key => countryTranslations[key] === value);
-                    if (!enName) enName = value;
-                    showCountryInfo(enName);
-                } else if (type === 'component') {
-                    const comp = Object.values(cpuData).find(c => c.name === value);
-                    if (comp) showComponentInfo(comp);
+        const svg = d3.select("#map-canvas")
+            .append("svg")
+            .attr("viewBox", `0 0 ${width} ${height}`)
+            .attr("preserveAspectRatio", "xMidYMid meet")
+            .on("click", function(event) {
+                if (event.target.tagName.toLowerCase() === 'svg') {
+                    document.getElementById("country-search").value = "";
+                    window.clearMapAndUI();
                 }
-            };
+            });
 
-            function autoLinkText(text) {
-                if (!text || text === "-") return text;
-                const materials = getAllUniqueMaterials();
-                const components = Object.values(cpuData).map(c => c.name);
-                const terms = [...components, ...materials].sort((a, b) => b.length - a.length);
+        const g = svg.append("g");
+        const projection = d3.geoMercator().scale(140).translate([width / 2, height / 1.5]);
+        const path = d3.geoPath().projection(projection);
+        const tooltip = d3.select("#tooltip");
+
+        const zoom = d3.zoom().scaleExtent([1, 8]).translateExtent([[-width * 0.1, -height * 0.1], [width * 1.1, height * 1.2]]) 
+            .on("zoom", (event) => { g.attr("transform", event.transform); });
+        svg.call(zoom);
+
+        window.clearMapAndUI = function() {
+            g.selectAll("path").classed("highlighted-country highlighted-mining highlighted-manufacturing highlighted-both", false);
+            document.getElementById("map-legend").style.display = "none";
+            document.getElementById("default-legend").style.display = "block";
+            document.getElementById("search-results").style.display = "none";
+            document.getElementById("country-details").style.display = "none";
+            document.getElementById("default-message").style.display = "block";
+        };
+
+        window.handleTagClick = function(type, value) {
+            window.clearMapAndUI(); 
+            document.getElementById("country-search").value = value;
+            
+            if (type === 'mineral') showMineralInfo(value);
+            else if (type === 'country') {
+                let enName = Object.keys(countryTranslations).find(key => countryTranslations[key] === value);
+                if (!enName) enName = value;
+                showCountryInfo(enName);
+            } else if (type === 'component') {
+                const comp = Object.values(cpuData).find(c => c.name === value);
+                if (comp) showComponentInfo(comp);
+            }
+        };
+
+        function autoLinkText(text) {
+            if (!text || text === "-") return text;
+            const materials = getAllUniqueMaterials();
+            const components = Object.values(cpuData).map(c => c.name);
+            const terms = [...components, ...materials].sort((a, b) => b.length - a.length);
+            
+            let placeholders = [];
+            terms.forEach((term) => {
+                const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const regex = new RegExp(`(${escapedTerm})`, 'gi');
+                if (regex.test(text)) {
+                    text = text.replace(regex, function(match) {
+                        const isMaterial = materials.some(m => m.toLowerCase() === term.toLowerCase());
+                        const originalTerm = isMaterial ? materials.find(m => m.toLowerCase() === term.toLowerCase()) : components.find(c => c.toLowerCase() === term.toLowerCase());
+                        const type = isMaterial ? 'mineral' : 'component';
+                        placeholders.push(`<span class="text-link-tag" onclick="window.handleTagClick('${type}', '${originalTerm}')">${match}</span>`);
+                        return `__PLCHLDR${placeholders.length - 1}__`;
+                    });
+                }
+            });
+            placeholders.forEach((html, i) => { text = text.replace(new RegExp(`__PLCHLDR${i}__`, 'g'), html); });
+            return text;
+        }
+
+        function highlightRoles(miningArray, manufacturingArray) {
+            g.selectAll("path").each(function(d) {
+                const countryEn = d.properties.name;
+                const countryDe = countryTranslations[countryEn] || countryEn;
+                const isMining = miningArray.includes(countryDe);
+                const isManufacturing = manufacturingArray.includes(countryDe);
                 
-                let placeholders = [];
-                terms.forEach((term) => {
-                    const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                    const regex = new RegExp(`(${escapedTerm})`, 'gi');
-                    if (regex.test(text)) {
-                        text = text.replace(regex, function(match) {
-                            const isMaterial = materials.some(m => m.toLowerCase() === term.toLowerCase());
-                            const originalTerm = isMaterial ? materials.find(m => m.toLowerCase() === term.toLowerCase()) : components.find(c => c.toLowerCase() === term.toLowerCase());
-                            const type = isMaterial ? 'mineral' : 'component';
-                            placeholders.push(`<span class="text-link-tag" onclick="window.handleTagClick('${type}', '${originalTerm}')">${match}</span>`);
-                            return `__PLCHLDR${placeholders.length - 1}__`;
-                        });
-                    }
-                });
-                placeholders.forEach((html, i) => { text = text.replace(new RegExp(`__PLCHLDR${i}__`, 'g'), html); });
-                return text;
+                if (isMining && isManufacturing) d3.select(this).classed("highlighted-both", true).raise();
+                else if (isMining) d3.select(this).classed("highlighted-mining", true).raise();
+                else if (isManufacturing) d3.select(this).classed("highlighted-manufacturing", true).raise();
+            });
+            
+            document.getElementById("default-legend").style.display = "none";
+            document.getElementById("map-legend").style.display = "block";
+        }
+
+        function renderDetails(title, sections) {
+            document.getElementById("default-message").style.display = "none";
+            document.getElementById("search-results").style.display = "none";
+            const container = document.getElementById("country-details");
+            container.style.display = "block";
+            
+            const isBookmarked = window.userData && window.userData.bookmarks && window.userData.bookmarks.includes(title);
+            const starHtml = window.currentUser ? `<span id="btn-star" class="bookmark-btn" onclick="window.toggleBookmark('${title}')" style="float:right;" title="Zu meiner Sammlung hinzufügen">${isBookmarked ? '⭐' : '☆'}</span>` : '';
+
+            let html = `<h2 style="color: #e74c3c; margin-bottom: 5px;">${title} ${starHtml}</h2>`;
+            sections.forEach(sec => {
+                const headerColor = sec.color || "#2980b9";
+                html += `<h3 style="color: ${headerColor}; border-bottom: 2px solid #eee; padding-bottom: 5px; font-size: 1.1em; margin-top: 20px;">${sec.title}</h3>`;
+                html += `<p style="line-height: 1.5; color: #34495e; margin-top: 5px;">${sec.content}</p>`;
+            });
+
+            if (window.currentUser) {
+                const safeTitle = title.replace(/[^a-zA-Z0-9]/g, '-');
+                const currentNote = (window.userData && window.userData.notes && window.userData.notes[title]) ? window.userData.notes[title] : "";
+                html += `
+                <div style="margin-top: 25px; padding: 15px; background: #fdf2f0; border-radius: 8px; border: 1px solid #fadbd8;">
+                    <h3 style="color: #e67e22; margin-top: 0; font-size: 1.1em;">Meine Notizen zu diesem Eintrag</h3>
+                    <textarea id="note-${safeTitle}" style="width: 100%; height: 80px; padding: 10px; border: 1px solid #bdc3c7; border-radius: 4px; box-sizing: border-box; font-family: inherit;">${currentNote}</textarea>
+                    <div style="display: flex; align-items: center; margin-top: 8px;">
+                        <button onclick="window.saveItemNote('${title}')" style="background: #27ae60; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size:14px;">Speichern</button>
+                        <span id="msg-${safeTitle}" style="margin-left: 10px; color: #27ae60; font-size: 14px; font-weight: bold;"></span>
+                    </div>
+                </div>`;
+            } else {
+                html += `<div style="margin-top: 25px; padding: 15px; background: #ecf0f1; border-radius: 8px; font-size: 0.9em; color: #7f8c8d; text-align: center;">
+                    <em>Melde dich an, um eigene Notizen und Lesezeichen zu diesem Eintrag zu speichern.</em>
+                </div>`;
             }
 
-            function highlightRoles(miningArray, manufacturingArray) {
-                g.selectAll("path").each(function(d) {
+            container.innerHTML = html;
+        }
+
+        function showCountryInfo(countryEn) {
+            const countryDe = countryTranslations[countryEn] || countryEn;
+            const info = getCountryInfo(countryDe);
+            const narrative = countryNarratives[countryEn] || countryNarratives[countryDe];
+
+            document.getElementById("map-legend").style.display = "none";
+            document.getElementById("default-legend").style.display = "none";
+            
+            g.selectAll("path").filter(p => p.properties.name === countryEn).classed("highlighted-country", true).raise();
+
+            let sections = [];
+            if (info.components.length > 0) {
+                sections.push({ title: "Wird hier gefördert (Rohstoffe)", content: generateTags(info.mining, 'mineral', 'Kein primärer Abbau erfasst.') });
+                sections.push({ title: "Wird hier verarbeitet / montiert", content: generateTags(info.manufacturing.map(c => c.name), 'component', 'Keine Endmontage erfasst.') });
+                sections.push({ title: "Beteiligt an Smartphone-Bauteilen", content: generateTags(info.components.map(c => c.name), 'component', 'Keine Beteiligung.') });
+            } else {
+                sections.push({ title: "Status", content: "Dieses Land spielt in der abgebildeten Smartphone-Lieferkette keine erfasste Hauptrolle." });
+            }
+
+            if (narrative) {
+                sections.push({ title: "Zusammenfassung Abbau", content: autoLinkText(narrative.abbau) });
+                sections.push({ title: "Zusammenfassung Verarbeitung", content: autoLinkText(narrative.verarbeitung) });
+                sections.push({ title: "Verwendung im Gerät", content: autoLinkText(narrative.verwendung) });
+                sections.push({ title: "Arbeitsbedingungen & Ethik", content: narrative.arbeitsbedingungen, color: "#e67e22" });
+            } else if (info.components.length > 0) {
+                sections.push({ title: "Arbeitsbedingungen & Ethik", content: "Keine spezifischen Daten zu den Arbeitsbedingungen in diesem Land verfügbar.", color: "#e67e22" });
+            }
+            renderDetails(`Land: ${countryDe}`, sections);
+        }
+
+        function showComponentInfo(comp) {
+            highlightRoles(comp.geography.mining, comp.geography.manufacturing);
+            
+            let transportDesc = "";
+            const highValueAir = ["Smartphone-CPU", "Smartphone-GPU", "Smartphone-SoC", "Smartphone-NPU", "LPDDR-RAM", "NAND-Flash-Speicher", "Kameramodul (Sensor-Einheit)", "5G-Modem", "OLED-Display-Panel", "MEMS-Gyroskop", "MEMS-Beschleunigungssensor", "Annäherungssensor (IR)", "Umgebungslichtsensor (ALS)", "NFC-Chip"];
+            const hazmatSea = ["Lithium-Ionen-Akku"]; 
+            
+            if (hazmatSea.includes(comp.name)) {
+                transportDesc = "<b>Seefracht (Gefahrgut):</b> Akkus unterliegen strengen IATA-Flugverboten. Sie müssen interkontinental fast ausschließlich sicher in Spezial-Containern verschifft werden.<br><br><b>Gefahrgut-LKW:</b> Wird für den Transport über verbundene Landmassen genutzt.";
+            } else if (highValueAir.includes(comp.name)) {
+                transportDesc = "<b>Luftfracht:</b> Dieses Bauteil ist extrem wertvoll, sensibel und leicht. Um in den kurzen Produktzyklen mithalten zu können, wird es weltweit geflogen.<br><br><b>Sicherheits-LKW:</b> Übernimmt die kontinentale Feinverteilung von den Flughäfen zu den Fabriken.";
+            } else {
+                transportDesc = "<b>Container-Seefracht:</b> Wird für Ozean-Routen genutzt, da das Bauteil schwerer oder in Massen benötigt wird.<br><br><b>LKW / Güterzug:</b> Übernimmt den Massentransport auf zusammenhängenden Landmassen.";
+            }
+
+            renderDetails(`Bauteil: ${comp.name}`, [
+                { title: "System-Kategorie", content: comp.category },
+                { title: "Verwendete Rohstoffe", content: generateTags(comp.materials, 'mineral', 'Keine Rohstoffe erfasst.') },
+                { title: "Abbau-Länder (Mining)", content: generateTags(comp.geography.mining, 'country', 'Keine Länder erfasst.') },
+                { title: "Verarbeitungs-Länder (Manufacturing)", content: generateTags(comp.geography.manufacturing, 'country', 'Keine Länder erfasst.') },
+                { title: "Technische Details", content: autoLinkText(comp.technicalSummary) },
+                { title: "Logistik & Transportweg", content: transportDesc, color: "#27ae60" } 
+            ]);
+        }
+
+        function showMineralInfo(mineral) {
+            const mapData = getMapDataForMaterial(mineral);
+            highlightRoles(mapData.miningLocations, mapData.manufacturingLocations);
+            
+            const usedInComps = Object.values(cpuData).filter(c => c.materials.includes(mineral)).map(c => c.name);
+            const mineralTransportDesc = "<b>Massengut-Frachter (Bulk):</b> Rohe Mineralien und Erze sind extrem schwer und haben einen geringen Kilo-Wert. Sie werden fast ausschließlich über die Weltmeere verschifft.<br><br><b>Güterzug / LKW (Schwerlast):</b> Übernimmt den Transport von den Minen zu den Häfen und Schmelzanlagen.";
+
+            renderDetails(`Rohstoff: ${mineral}`, [
+                { title: "Verwendet in Smartphone-Bauteilen", content: generateTags(usedInComps, 'component', 'Keine Bauteile erfasst.') },
+                { title: "Abbau-Länder", content: generateTags(mapData.miningLocations, 'country', 'Keine spezifischen Länder erfasst (globaler Markt).') },
+                { title: "Veredelungs- & Verarbeitungs-Länder", content: generateTags(mapData.manufacturingLocations, 'country', 'Keine Länder erfasst.') },
+                { title: "Logistik & Transportweg", content: mineralTransportDesc, color: "#27ae60" }
+            ]);
+        }
+
+        // Echte Weltkarte ONLINE abrufen
+        d3.json("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson").then(function(data) {
+            document.getElementById("loading").style.display = "none";
+
+            g.selectAll("path").data(data.features).enter().append("path").attr("d", path)
+                .attr("class", function(d) {
                     const countryEn = d.properties.name;
                     const countryDe = countryTranslations[countryEn] || countryEn;
-                    const isMining = miningArray.includes(countryDe);
-                    const isManufacturing = manufacturingArray.includes(countryDe);
                     
-                    if (isMining && isManufacturing) d3.select(this).classed("highlighted-both", true).raise();
-                    else if (isMining) d3.select(this).classed("highlighted-mining", true).raise();
-                    else if (isManufacturing) d3.select(this).classed("highlighted-manufacturing", true).raise();
-                });
-                
-                document.getElementById("default-legend").style.display = "none";
-                document.getElementById("map-legend").style.display = "block";
-            }
-
-            function renderDetails(title, sections) {
-                document.getElementById("default-message").style.display = "none";
-                document.getElementById("search-results").style.display = "none";
-                const container = document.getElementById("country-details");
-                container.style.display = "block";
-                
-                const isBookmarked = window.userData && window.userData.bookmarks && window.userData.bookmarks.includes(title);
-                const starHtml = window.currentUser ? `<span id="btn-star" class="bookmark-btn" onclick="window.toggleBookmark('${title}')" style="float:right;" title="Zu meiner Sammlung hinzufügen">${isBookmarked ? '⭐' : '☆'}</span>` : '';
-
-                let html = `<h2 style="color: #e74c3c; margin-bottom: 5px;">${title} ${starHtml}</h2>`;
-                sections.forEach(sec => {
-                    const headerColor = sec.color || "#2980b9";
-                    html += `<h3 style="color: ${headerColor}; border-bottom: 2px solid #eee; padding-bottom: 5px; font-size: 1.1em; margin-top: 20px;">${sec.title}</h3>`;
-                    html += `<p style="line-height: 1.5; color: #34495e; margin-top: 5px;">${sec.content}</p>`;
-                });
-
-                if (window.currentUser) {
-                    const safeTitle = title.replace(/[^a-zA-Z0-9]/g, '-');
-                    const currentNote = (window.userData && window.userData.notes && window.userData.notes[title]) ? window.userData.notes[title] : "";
-                    html += `
-                    <div style="margin-top: 25px; padding: 15px; background: #fdf2f0; border-radius: 8px; border: 1px solid #fadbd8;">
-                        <h3 style="color: #e67e22; margin-top: 0; font-size: 1.1em;">Meine Notizen zu diesem Eintrag</h3>
-                        <textarea id="note-${safeTitle}" style="width: 100%; height: 80px; padding: 10px; border: 1px solid #bdc3c7; border-radius: 4px; box-sizing: border-box; font-family: inherit;">${currentNote}</textarea>
-                        <div style="display: flex; align-items: center; margin-top: 8px;">
-                            <button onclick="window.saveItemNote('${title}')" style="background: #27ae60; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size:14px;">Speichern</button>
-                            <span id="msg-${safeTitle}" style="margin-left: 10px; color: #27ae60; font-size: 14px; font-weight: bold;"></span>
-                        </div>
-                    </div>`;
-                } else {
-                    html += `<div style="margin-top: 25px; padding: 15px; background: #ecf0f1; border-radius: 8px; font-size: 0.9em; color: #7f8c8d; text-align: center;">
-                        <em>Melde dich an, um eigene Notizen und Lesezeichen zu diesem Eintrag zu speichern.</em>
-                    </div>`;
-                }
-
-                container.innerHTML = html;
-            }
-
-            function showCountryInfo(countryEn) {
-                const countryDe = countryTranslations[countryEn] || countryEn;
-                const info = getCountryInfo(countryDe);
-                const narrative = countryNarratives[countryEn] || countryNarratives[countryDe];
-
-                document.getElementById("map-legend").style.display = "none";
-                document.getElementById("default-legend").style.display = "none";
-                
-                g.selectAll("path").filter(p => p.properties.name === countryEn).classed("highlighted-country", true).raise();
-
-                let sections = [];
-                if (info.components.length > 0) {
-                    sections.push({ title: "Wird hier gefördert (Rohstoffe)", content: generateTags(info.mining, 'mineral', 'Kein primärer Abbau erfasst.') });
-                    sections.push({ title: "Wird hier verarbeitet / montiert", content: generateTags(info.manufacturing.map(c => c.name), 'component', 'Keine Endmontage erfasst.') });
-                    sections.push({ title: "Beteiligt an Smartphone-Bauteilen", content: generateTags(info.components.map(c => c.name), 'component', 'Keine Beteiligung.') });
-                } else {
-                    sections.push({ title: "Status", content: "Dieses Land spielt in der abgebildeten Smartphone-Lieferkette keine erfasste Hauptrolle." });
-                }
-
-                if (narrative) {
-                    sections.push({ title: "Zusammenfassung Abbau", content: autoLinkText(narrative.abbau) });
-                    sections.push({ title: "Zusammenfassung Verarbeitung", content: autoLinkText(narrative.verarbeitung) });
-                    sections.push({ title: "Verwendung im Gerät", content: autoLinkText(narrative.verwendung) });
-                    sections.push({ title: "Arbeitsbedingungen & Ethik", content: narrative.arbeitsbedingungen, color: "#e67e22" });
-                } else if (info.components.length > 0) {
-                    sections.push({ title: "Arbeitsbedingungen & Ethik", content: "Keine spezifischen Daten zu den Arbeitsbedingungen in diesem Land verfügbar.", color: "#e67e22" });
-                }
-                renderDetails(`Land: ${countryDe}`, sections);
-            }
-
-            function showComponentInfo(comp) {
-                highlightRoles(comp.geography.mining, comp.geography.manufacturing);
-                
-                let transportDesc = "";
-                const highValueAir = ["Smartphone-CPU", "Smartphone-GPU", "Smartphone-SoC", "Smartphone-NPU", "LPDDR-RAM", "NAND-Flash-Speicher", "Kameramodul (Sensor-Einheit)", "5G-Modem", "OLED-Display-Panel", "MEMS-Gyroskop", "MEMS-Beschleunigungssensor", "Annäherungssensor (IR)", "Umgebungslichtsensor (ALS)", "NFC-Chip"];
-                const hazmatSea = ["Lithium-Ionen-Akku"]; 
-                
-                if (hazmatSea.includes(comp.name)) {
-                    transportDesc = "<b>Seefracht (Gefahrgut):</b> Akkus unterliegen strengen IATA-Flugverboten. Sie müssen interkontinental fast ausschließlich sicher in Spezial-Containern verschifft werden.<br><br><b>Gefahrgut-LKW:</b> Wird für den Transport über verbundene Landmassen genutzt.";
-                } else if (highValueAir.includes(comp.name)) {
-                    transportDesc = "<b>Luftfracht:</b> Dieses Bauteil ist extrem wertvoll, sensibel und leicht. Um in den kurzen Produktzyklen mithalten zu können, wird es weltweit geflogen.<br><br><b>Sicherheits-LKW:</b> Übernimmt die kontinentale Feinverteilung von den Flughäfen zu den Fabriken.";
-                } else {
-                    transportDesc = "<b>Container-Seefracht:</b> Wird für Ozean-Routen genutzt, da das Bauteil schwerer oder in Massen benötigt wird.<br><br><b>LKW / Güterzug:</b> Übernimmt den Massentransport auf zusammenhängenden Landmassen.";
-                }
-
-                renderDetails(`Bauteil: ${comp.name}`, [
-                    { title: "System-Kategorie", content: comp.category },
-                    { title: "Verwendete Rohstoffe", content: generateTags(comp.materials, 'mineral', 'Keine Rohstoffe erfasst.') },
-                    { title: "Abbau-Länder (Mining)", content: generateTags(comp.geography.mining, 'country', 'Keine Länder erfasst.') },
-                    { title: "Verarbeitungs-Länder (Manufacturing)", content: generateTags(comp.geography.manufacturing, 'country', 'Keine Länder erfasst.') },
-                    { title: "Technische Details", content: autoLinkText(comp.technicalSummary) },
-                    { title: "Logistik & Transportweg", content: transportDesc, color: "#27ae60" } 
-                ]);
-            }
-
-            function showMineralInfo(mineral) {
-                const mapData = getMapDataForMaterial(mineral);
-                highlightRoles(mapData.miningLocations, mapData.manufacturingLocations);
-                
-                const usedInComps = Object.values(cpuData).filter(c => c.materials.includes(mineral)).map(c => c.name);
-                const mineralTransportDesc = "<b>Massengut-Frachter (Bulk):</b> Rohe Mineralien und Erze sind extrem schwer und haben einen geringen Kilo-Wert. Sie werden fast ausschließlich über die Weltmeere verschifft.<br><br><b>Güterzug / LKW (Schwerlast):</b> Übernimmt den Transport von den Minen zu den Häfen und Schmelzanlagen.";
-
-                renderDetails(`Rohstoff: ${mineral}`, [
-                    { title: "Verwendet in Smartphone-Bauteilen", content: generateTags(usedInComps, 'component', 'Keine Bauteile erfasst.') },
-                    { title: "Abbau-Länder", content: generateTags(mapData.miningLocations, 'country', 'Keine spezifischen Länder erfasst (globaler Markt).') },
-                    { title: "Veredelungs- & Verarbeitungs-Länder", content: generateTags(mapData.manufacturingLocations, 'country', 'Keine Länder erfasst.') },
-                    { title: "Logistik & Transportweg", content: mineralTransportDesc, color: "#27ae60" }
-                ]);
-            }
-
-            // Echte Weltkarte ONLINE abrufen
-            d3.json("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson").then(function(data) {
-                document.getElementById("loading").style.display = "none";
-
-                g.selectAll("path").data(data.features).enter().append("path").attr("d", path)
-                    .attr("class", function(d) {
-                        const countryEn = d.properties.name;
-                        const countryDe = countryTranslations[countryEn] || countryEn;
-                        
-                        const geoCenter = d3.geoCentroid(d);
-                        if(geoCenter && !isNaN(geoCenter[0])) { 
-                            countryCentroids[countryEn] = geoCenter; 
-                            countryCentroids[countryDe] = geoCenter; 
-                        }
-                        
-                        const hasNarrative = !!(countryNarratives[countryEn] || countryNarratives[countryDe]);
-                        const compInfo = getCountryInfo(countryDe);
-                        const hasComponent = compInfo.components.length > 0;
-                        
-                        let baseClass = "country ";
-                        if (hasNarrative) return baseClass + "role-major";
-                        else if (hasComponent) return baseClass + "role-minor";
-                        else return baseClass + "role-none";
-                    })
-                    .on("mouseover", function(event, d) {
-                        const countryDe = countryTranslations[d.properties.name] || d.properties.name;
-                        tooltip.style("opacity", 1).html(countryDe);
-                        if (!d3.select(this).attr("class").includes("highlighted")) d3.select(this).raise(); 
-                    })
-                    .on("mousemove", function(event) { tooltip.style("left", (event.pageX + 15) + "px").style("top", (event.pageY - 20) + "px"); })
-                    .on("mouseout", function() { tooltip.style("opacity", 0); })
-                    .on("click", function(event, d) {
-                        window.clearMapAndUI();
-                        const countryEn = d.properties.name;
-                        document.getElementById("country-search").value = countryTranslations[countryEn] || countryEn;
-                        showCountryInfo(countryEn);
-                    });
-
-                document.getElementById("country-search").addEventListener("input", function(e) {
-                    const term = e.target.value.toLowerCase().trim();
-                    const resultsContainer = document.getElementById("search-results");
+                    const hasNarrative = !!(countryNarratives[countryEn] || countryNarratives[countryDe]);
+                    const compInfo = getCountryInfo(countryDe);
+                    const hasComponent = compInfo.components.length > 0;
                     
+                    let baseClass = "country ";
+                    if (hasNarrative) return baseClass + "role-major";
+                    else if (hasComponent) return baseClass + "role-minor";
+                    else return baseClass + "role-none";
+                })
+                .on("mouseover", function(event, d) {
+                    const countryDe = countryTranslations[d.properties.name] || d.properties.name;
+                    tooltip.style("opacity", 1).html(countryDe);
+                    if (!d3.select(this).attr("class").includes("highlighted")) d3.select(this).raise(); 
+                })
+                .on("mousemove", function(event) { tooltip.style("left", (event.pageX + 15) + "px").style("top", (event.pageY - 20) + "px"); })
+                .on("mouseout", function() { tooltip.style("opacity", 0); })
+                .on("click", function(event, d) {
                     window.clearMapAndUI();
-
-                    if (term === "") { return; }
-
-                    resultsContainer.style.display = "block";
-                    document.getElementById("default-message").style.display = "none";
-                    document.getElementById("country-details").style.display = "none";
-                    document.getElementById("default-legend").style.display = "none";
-                    resultsContainer.innerHTML = "<h3>Suchergebnisse:</h3>";
-
-                    function calcScore(searchTerm, textStr) {
-                        if (!textStr) return 0;
-                        textStr = String(textStr).toLowerCase();
-                        if (textStr === searchTerm) return 100;
-                        if (textStr.startsWith(searchTerm)) return 50;
-                        if (textStr.includes(searchTerm)) return 10;
-                        return 0;
-                    }
-
-                    const searchResults = [];
-                    Object.values(cpuData).forEach(c => {
-                        let score = Math.max(0, calcScore(term, c.name));
-                        if (c.category.toLowerCase().includes(term)) score = Math.max(score, 5);
-                        (componentTranslations[c.name] || []).forEach(t => { const s = calcScore(term, t); if (s > 0) score = Math.max(score, s - 1); });
-                        if (score > 0) searchResults.push({ text: c.name, typeLabel: "Bauteil", typeClass: "result-bauteil", score: score, onClickFn: () => showComponentInfo(c) });
-                    });
-
-                    allMaterials.forEach(m => {
-                        let score = Math.max(0, calcScore(term, m));
-                        (materialTranslations[m] || []).forEach(t => { const s = calcScore(term, t); if (s > 0) score = Math.max(score, s - 1); });
-                        if (score > 0) searchResults.push({ text: m, typeLabel: "Rohstoff", typeClass: "result-rohstoff", score: score, onClickFn: () => showMineralInfo(m) });
-                    });
-
-                    g.selectAll("path").each(function(d) {
-                        const en = d.properties.name;
-                        const de = countryTranslations[en] || en;
-                        let score = Math.max(0, calcScore(term, de));
-                        const enScore = calcScore(term, en);
-                        if (enScore > 0) score = Math.max(score, enScore - 1);
-                        if (score > 0) searchResults.push({ text: de, typeLabel: "Land", typeClass: "result-land", score: score, onClickFn: () => showCountryInfo(en) });
-                    });
-
-                    if (searchResults.length === 0) {
-                        resultsContainer.innerHTML += "<p style='color: #7f8c8d; font-style: italic;'>Keine Treffer gefunden.</p>";
-                        return;
-                    }
-
-                    const uniqueResults = [];
-                    const seen = new Set();
-                    searchResults.forEach(r => {
-                        const id = r.typeLabel + ":" + r.text;
-                        if (!seen.has(id)) { seen.add(id); uniqueResults.push(r); }
-                    });
-
-                    uniqueResults.sort((a, b) => b.score !== a.score ? b.score - a.score : a.text.localeCompare(b.text));
-                    
-                    const fragment = document.createDocumentFragment();
-                    uniqueResults.forEach(item => {
-                        const div = document.createElement("div");
-                        div.className = `search-result-item ${item.typeClass}`;
-                        div.innerHTML = `<div class="search-type-label">${item.typeLabel}</div>${item.text}`;
-                        div.onclick = () => { 
-                            window.clearMapAndUI();
-                            document.getElementById("country-search").value = item.text; 
-                            item.onClickFn(); 
-                        };
-                        fragment.appendChild(div);
-                    });
-                    resultsContainer.appendChild(fragment);
+                    const countryEn = d.properties.name;
+                    document.getElementById("country-search").value = countryTranslations[countryEn] || countryEn;
+                    showCountryInfo(countryEn);
                 });
 
-            }).catch(function(error) {
-                document.getElementById("loading").innerText = "Fehler: Keine Internetverbindung oder Datenquelle nicht erreichbar.";
-                document.getElementById("loading").style.color = "red";
+            const searchInputObj = document.getElementById("country-search");
+            
+            searchInputObj.addEventListener("input", function(e) {
+                const term = e.target.value.toLowerCase().trim();
+                const resultsContainer = document.getElementById("search-results");
+                
+                window.clearMapAndUI();
+
+                if (term === "") { return; }
+
+                resultsContainer.style.display = "block";
+                document.getElementById("default-message").style.display = "none";
+                document.getElementById("country-details").style.display = "none";
+                document.getElementById("default-legend").style.display = "none";
+                resultsContainer.innerHTML = "<h3>Suchergebnisse:</h3>";
+
+                function calcScore(searchTerm, textStr) {
+                    if (!textStr) return 0;
+                    textStr = String(textStr).toLowerCase();
+                    if (textStr === searchTerm) return 100;
+                    if (textStr.startsWith(searchTerm)) return 50;
+                    if (textStr.includes(searchTerm)) return 10;
+                    return 0;
+                }
+
+                const searchResults = [];
+                Object.values(cpuData).forEach(c => {
+                    let score = Math.max(0, calcScore(term, c.name));
+                    if (c.category.toLowerCase().includes(term)) score = Math.max(score, 5);
+                    (componentTranslations[c.name] || []).forEach(t => { const s = calcScore(term, t); if (s > 0) score = Math.max(score, s - 1); });
+                    if (score > 0) searchResults.push({ text: c.name, typeLabel: "Bauteil", typeClass: "result-bauteil", score: score, onClickFn: () => showComponentInfo(c) });
+                });
+
+                allMaterials.forEach(m => {
+                    let score = Math.max(0, calcScore(term, m));
+                    (materialTranslations[m] || []).forEach(t => { const s = calcScore(term, t); if (s > 0) score = Math.max(score, s - 1); });
+                    if (score > 0) searchResults.push({ text: m, typeLabel: "Rohstoff", typeClass: "result-rohstoff", score: score, onClickFn: () => showMineralInfo(m) });
+                });
+
+                g.selectAll("path").each(function(d) {
+                    const en = d.properties.name;
+                    const de = countryTranslations[en] || en;
+                    let score = Math.max(0, calcScore(term, de));
+                    const enScore = calcScore(term, en);
+                    if (enScore > 0) score = Math.max(score, enScore - 1);
+                    if (score > 0) searchResults.push({ text: de, typeLabel: "Land", typeClass: "result-land", score: score, onClickFn: () => showCountryInfo(en) });
+                });
+
+                if (searchResults.length === 0) {
+                    resultsContainer.innerHTML += "<p style='color: #7f8c8d; font-style: italic;'>Keine Treffer gefunden.</p>";
+                    return;
+                }
+
+                const uniqueResults = [];
+                const seen = new Set();
+                searchResults.forEach(r => {
+                    const id = r.typeLabel + ":" + r.text;
+                    if (!seen.has(id)) { seen.add(id); uniqueResults.push(r); }
+                });
+
+                uniqueResults.sort((a, b) => b.score !== a.score ? b.score - a.score : a.text.localeCompare(b.text));
+                
+                const fragment = document.createDocumentFragment();
+                uniqueResults.forEach(item => {
+                    const div = document.createElement("div");
+                    div.className = `search-result-item ${item.typeClass}`;
+                    div.innerHTML = `<div class="search-type-label">${item.typeLabel}</div>${item.text}`;
+                    div.onclick = () => { 
+                        window.clearMapAndUI();
+                        document.getElementById("country-search").value = item.text; 
+                        item.onClickFn(); 
+                    };
+                    fragment.appendChild(div);
+                });
+                resultsContainer.appendChild(fragment);
             });
 
-            window.addEventListener('resize', () => {
-                const newWidth = document.getElementById('map-container').clientWidth;
-                const newHeight = document.getElementById('map-container').clientHeight;
-                svg.attr("viewBox", `0 0 ${newWidth} ${newHeight}`);
-                zoom.translateExtent([[-newWidth * 0.03, -newHeight * 0.005], [newWidth * 1.03, newHeight * 1.15]]);
-            });
-        };
+        }).catch(function(error) {
+            document.getElementById("loading").innerText = "Fehler: Keine Internetverbindung oder Datenquelle nicht erreichbar.";
+            document.getElementById("loading").style.color = "red";
+        });
     </script>
 </body>
 </html>
