@@ -23,11 +23,8 @@
             width: 100vw; overflow: hidden; overscroll-behavior: none;
         }
 
-        /* --- VERSTECKT DIE APP VOR DEM LOGIN --- */
         body:not(.app-active) > #map-container,
-        body:not(.app-active) > #info-panel {
-            display: none !important;
-        }
+        body:not(.app-active) > #info-panel { display: none !important; }
 
         /* --- AUTHENTIFIZIERUNGS-OVERLAY --- */
         #auth-overlay {
@@ -37,9 +34,16 @@
         }
         .auth-container {
             background: var(--white); padding: 40px; border-radius: 12px;
-            width: 350px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center;
+            width: 350px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center; position: relative;
         }
-        .auth-container h2 { margin-top: 0; color: var(--text-dark); }
+        .auth-container h2 { margin-top: 0; color: var(--text-dark); margin-bottom: 15px;}
+        
+        /* Tabs für E-Mail / Telefon */
+        .auth-tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid #eee; }
+        .auth-tab { flex: 1; padding: 10px; cursor: pointer; font-weight: bold; color: var(--text-light); transition: all 0.2s; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+        .auth-tab.active { color: var(--primary); border-bottom: 2px solid var(--primary); }
+        .auth-tab:hover:not(.active) { color: var(--text-dark); }
+
         .auth-container input {
             width: 100%; padding: 12px; margin: 8px 0; border: 1px solid var(--border-light);
             border-radius: 6px; box-sizing: border-box; font-family: inherit; font-size: 15px; outline: none;
@@ -61,7 +65,7 @@
         #map-container { flex: 2; background-color: var(--bg-map); position: relative; cursor: grab; overflow: hidden; }
         #map-container:active { cursor: grabbing; }
         #map-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
-        svg { width: 100%; height: 100%; display: block; }
+        svg { width: 100%; height: 100%; }
 
         #loading {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -72,8 +76,7 @@
         #search-container { position: absolute; top: 20px; left: 20px; z-index: 999999; pointer-events: auto !important; }
         #country-search {
             padding: 12px 15px; font-size: 16px; border: 2px solid var(--primary); border-radius: 25px; outline: none; box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            width: 260px; transition: width 0.3s ease, box-shadow 0.3s ease; font-family: inherit; pointer-events: auto !important;
-            user-select: text !important; -webkit-user-select: text !important; -moz-user-select: text !important; background: rgba(255, 255, 255, 0.95);
+            width: 260px; transition: width 0.3s ease, box-shadow 0.3s ease; font-family: inherit; pointer-events: auto !important; background: rgba(255, 255, 255, 0.95);
         }
         #country-search:focus { width: 320px; box-shadow: 0 6px 14px rgba(0,0,0,0.25); border-color: var(--primary-hover); background: var(--white); }
 
@@ -86,17 +89,12 @@
         .legend-item:last-child { margin-bottom: 0; }
         .legend-color { width: 18px; height: 18px; border-radius: 4px; margin-right: 10px; display: inline-block; border: 1px solid var(--border-light); }
 
-        /* --- MAP COUNTRIES --- */
         .country { stroke: var(--border-light); stroke-width: 0.5px; transition: fill 0.2s ease, stroke-width 0.2s ease; cursor: pointer; }
-        .country.role-major { fill: var(--primary); }
-        .country.role-minor { fill: var(--secondary); }
-        .country.role-none { fill: #ecf0f1; }
-
+        .country.role-major { fill: var(--primary); } .country.role-minor { fill: var(--secondary); } .country.role-none { fill: #ecf0f1; }
         .highlighted-country { fill: var(--highlight-country) !important; stroke: var(--white) !important; stroke-width: 2.5px !important; }
         .highlighted-mining { fill: var(--highlight-mining) !important; stroke: var(--white) !important; stroke-width: 2.5px !important; }
         .highlighted-manufacturing { fill: var(--highlight-mfg) !important; stroke: var(--white) !important; stroke-width: 2.5px !important; }
         .highlighted-both { fill: var(--highlight-both) !important; stroke: var(--white) !important; stroke-width: 2.5px !important; }
-
         .country.role-major:hover, .country.role-minor:hover { fill: var(--highlight-both) !important; stroke: var(--white); stroke-width: 2.5px; }
         .country.role-none:hover { fill: #d5dbdb !important; stroke: var(--white); stroke-width: 1.5px; }
 
@@ -107,13 +105,9 @@
         }
 
         h1 { font-size: 1.6em; color: var(--text-dark); margin-top: 0; margin-bottom: 15px; }
-        
-        #auth-status-bar {
-            display: flex; justify-content: space-between; align-items: center; 
-            margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee;
-        }
+        #auth-status-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
         #user-greeting { color: var(--primary); font-weight: bold; margin: 0; font-size: 0.9em; }
-        .info-section { display: none; margin-top: 25px; }
+
         #default-message { color: var(--text-light); font-style: italic; margin-top: 10px; background: #fdf2f0; padding: 15px; border-radius: 5px;}
         #search-results { display: none; margin-top: 20px; }
         .search-result-item { padding: 12px 15px; margin-bottom: 8px; background-color: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 5px; cursor: pointer; transition: all 0.2s ease; font-size: 14px; color: var(--text-dark); }
@@ -123,7 +117,7 @@
         .search-result-item.result-rohstoff { border-left: 5px solid var(--highlight-mining); }
         .search-type-label { font-size: 0.8em; color: var(--text-light); text-transform: uppercase; font-weight: bold; margin-bottom: 3px; }
 
-        .clickable-tag, .text-link-tag { display: inline-block; background-color: #eaf2f8; color: var(--primary-hover); padding: 5px 12px; margin: 4px 6px 4px 0; border-radius: 20px; font-size: 0.9em; cursor: pointer; transition: all 0.2s ease; border: 1px solid #a9cce3; font-weight: 500; }
+        .clickable-tag, .text-link-tag { display: inline-block; background-color: #eaf2f8; color: var(--primary-hover); padding: 5px 12px; margin: 4px 6px 4px 0; border-radius: 20px; font-size: 0.9em; cursor: pointer; border: 1px solid #a9cce3; font-weight: 500; }
         .clickable-tag:hover, .text-link-tag:hover { background-color: var(--primary); color: var(--white); }
 
         .bookmark-btn { font-size: 1.2em; cursor: pointer; transition: transform 0.2s; user-select: none; }
@@ -147,11 +141,29 @@
 <body>
 
     <div id="auth-overlay">
+        
         <div class="auth-container" id="login-box">
-            <h2>Projekt Login</h2>
-            <input type="email" id="login-email" placeholder="E-Mail Adresse">
-            <input type="password" id="login-pass" placeholder="Passwort">
-            <button class="auth-btn" id="btn-login">Anmelden</button>
+            <h2>Anmelden</h2>
+            <div class="auth-tabs">
+                <div class="auth-tab active" id="tab-login-email" onclick="switchLoginTab('email')">E-Mail</div>
+                <div class="auth-tab" id="tab-login-phone" onclick="switchLoginTab('phone')">Telefon</div>
+            </div>
+
+            <div id="login-email-section">
+                <input type="email" id="login-email" placeholder="E-Mail Adresse">
+                <input type="password" id="login-pass" placeholder="Passwort">
+                <button class="auth-btn" id="btn-login-email">Anmelden</button>
+            </div>
+
+            <div id="login-phone-section" style="display: none;">
+                <input type="tel" id="login-phone" placeholder="Nummer inkl. Ländercode (z.B. +49...)">
+                <button class="auth-btn" id="btn-login-send-sms">SMS Code anfordern</button>
+                <div class="verify-box" id="login-sms-verify-box">
+                    <input type="text" id="login-sms-code" placeholder="6-stelligen Code eingeben">
+                    <button class="auth-btn" id="btn-login-verify-sms">Bestätigen & Einloggen</button>
+                </div>
+            </div>
+
             <button class="auth-btn auth-btn-guest" onclick="continueAsGuest()">Ohne Anmeldung als Gast nutzen</button>
             <div class="auth-message" id="login-msg"></div>
             <div class="auth-switch" onclick="toggleAuth(true)">Noch keinen Account? Registrieren.</div>
@@ -159,32 +171,40 @@
 
         <div class="auth-container" id="register-box" style="display: none;">
             <h2>Registrierung</h2>
-            <p style="font-size: 12px; color: #7f8c8d;">Ein Account wird benötigt, um dauerhaft Notizen und Lesezeichen zu speichern.</p>
-            <div id="reg-inputs">
-                <input type="text" id="reg-vorname" placeholder="Vorname">
-                <input type="email" id="reg-email" placeholder="E-Mail Adresse">
-                <input type="password" id="reg-pass" placeholder="Passwort (min. 6 Zeichen)">
-                <input type="tel" id="reg-phone" placeholder="Handynummer (Optional, z.B. +49...)">
-                <button class="auth-btn" id="btn-register">Code senden & Registrieren</button>
+            <div class="auth-tabs">
+                <div class="auth-tab active" id="tab-reg-email" onclick="switchRegTab('email')">E-Mail</div>
+                <div class="auth-tab" id="tab-reg-phone" onclick="switchRegTab('phone')">Telefon</div>
             </div>
             
-            <div class="verify-box" id="verify-box">
-                <p style="font-size: 14px; color: #27ae60;">Ein E-Mail Code wurde gesendet!</p>
-                <input type="text" id="verify-code-input" placeholder="6-stelliger E-Mail Code">
-                <button class="auth-btn" id="btn-verify">E-Mail Bestätigen</button>
+            <p style="font-size: 12px; color: #7f8c8d; margin-top: -10px; margin-bottom: 15px;">Ein Account wird benötigt, um dauerhaft Notizen und Lesezeichen zu speichern.</p>
+
+            <div id="reg-email-section">
+                <input type="text" id="reg-vorname-email" placeholder="Vorname">
+                <input type="email" id="reg-email" placeholder="E-Mail Adresse">
+                <input type="password" id="reg-pass" placeholder="Passwort (min. 6 Zeichen)">
+                <button class="auth-btn" id="btn-reg-send-email">Code senden & Registrieren</button>
+                <div class="verify-box" id="reg-email-verify-box">
+                    <p style="font-size: 14px; color: #27ae60;">Ein Code wurde an deine E-Mail gesendet!</p>
+                    <input type="text" id="reg-email-code" placeholder="6-stelliger Code eingeben">
+                    <button class="auth-btn" id="btn-reg-verify-email">Bestätigen</button>
+                </div>
             </div>
 
-            <div class="verify-box" id="phone-verify-box">
-                <p style="font-size: 14px; color: #2980b9;">Ein SMS-Code wurde gesendet!</p>
-                <input type="text" id="verify-sms-input" placeholder="6-stelliger SMS Code">
-                <button class="auth-btn" id="btn-verify-sms">SMS Bestätigen</button>
-                <div class="auth-switch" onclick="location.reload()">Überspringen & zur App</div>
+            <div id="reg-phone-section" style="display: none;">
+                <input type="text" id="reg-vorname-phone" placeholder="Vorname">
+                <input type="tel" id="reg-phone" placeholder="Nummer inkl. Ländercode (z.B. +49...)">
+                <button class="auth-btn" id="btn-reg-send-sms">SMS Code anfordern</button>
+                <div class="verify-box" id="reg-sms-verify-box">
+                    <input type="text" id="reg-sms-code" placeholder="6-stelliger SMS Code">
+                    <button class="auth-btn" id="btn-reg-verify-sms">Bestätigen & Account erstellen</button>
+                </div>
             </div>
 
-            <div id="recaptcha-container"></div>
             <div class="auth-message" id="reg-msg"></div>
             <div class="auth-switch" onclick="toggleAuth(false)">Bereits registriert? Anmelden.</div>
         </div>
+        
+        <div id="recaptcha-container"></div>
     </div>
 
     <div id="map-container">
@@ -228,7 +248,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile, signOut, RecaptchaVerifier, linkWithPhoneNumber } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile, signOut, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -251,7 +271,9 @@
         window.currentUser = null;
         window.userData = { notes: {}, bookmarks: [] };
         let generatedCode = null;
+        window.confirmationResult = null; // Für Telefon Auth
 
+        // DATENBANK FUNKTIONEN
         async function loadUserData(uid) {
             try {
                 const docRef = doc(db, "users", uid);
@@ -272,15 +294,44 @@
             catch(e) { console.error("Speichern fehlgeschlagen", e); }
         }
 
+        // TAB-STEUERUNG
         window.toggleAuth = (showReg) => {
             document.getElementById('login-box').style.display = showReg ? 'none' : 'block';
             document.getElementById('register-box').style.display = showReg ? 'block' : 'none';
         };
 
-        document.getElementById('btn-register').onclick = () => {
+        window.switchLoginTab = (mode) => {
+            document.getElementById('tab-login-email').className = mode === 'email' ? 'auth-tab active' : 'auth-tab';
+            document.getElementById('tab-login-phone').className = mode === 'phone' ? 'auth-tab active' : 'auth-tab';
+            document.getElementById('login-email-section').style.display = mode === 'email' ? 'block' : 'none';
+            document.getElementById('login-phone-section').style.display = mode === 'phone' ? 'block' : 'none';
+            document.getElementById('login-msg').innerText = "";
+        };
+
+        window.switchRegTab = (mode) => {
+            document.getElementById('tab-reg-email').className = mode === 'email' ? 'auth-tab active' : 'auth-tab';
+            document.getElementById('tab-reg-phone').className = mode === 'phone' ? 'auth-tab active' : 'auth-tab';
+            document.getElementById('reg-email-section').style.display = mode === 'email' ? 'block' : 'none';
+            document.getElementById('reg-phone-section').style.display = mode === 'phone' ? 'block' : 'none';
+            document.getElementById('reg-msg').innerText = "";
+        };
+
+        // HILFSFUNKTION FÜR RECAPTCHA
+        function initRecaptcha() {
+            if (!window.recaptchaVerifier) {
+                window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { 'size': 'invisible' });
+            }
+        }
+
+        // ==========================================
+        // 1. REGISTRIERUNG
+        // ==========================================
+
+        // 1A. Registrierung E-Mail
+        document.getElementById('btn-reg-send-email').onclick = () => {
             const email = document.getElementById('reg-email').value;
             const pw = document.getElementById('reg-pass').value;
-            const vorname = document.getElementById('reg-vorname').value;
+            const vorname = document.getElementById('reg-vorname-email').value;
 
             if(!vorname || email.length < 5 || pw.length < 6) return document.getElementById('reg-msg').innerText = "Bitte alle Felder korrekt ausfüllen (PW min. 6 Zeichen).";
 
@@ -290,8 +341,8 @@
 
             emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, { vorname: vorname, email: email, code: generatedCode })
             .then(() => {
-                document.getElementById('reg-inputs').style.display = 'none';
-                document.getElementById('verify-box').style.display = 'block';
+                document.getElementById('btn-reg-send-email').style.display = 'none';
+                document.getElementById('reg-email-verify-box').style.display = 'block';
                 document.getElementById('reg-msg').innerText = "";
             }).catch((err) => { 
                 document.getElementById('reg-msg').style.color = "#e74c3c";
@@ -299,56 +350,110 @@
             });
         };
 
-        document.getElementById('btn-verify').onclick = async () => {
-            if(document.getElementById('verify-code-input').value !== generatedCode) {
+        document.getElementById('btn-reg-verify-email').onclick = async () => {
+            if(document.getElementById('reg-email-code').value !== generatedCode) {
                 document.getElementById('reg-msg').style.color = "#e74c3c";
-                return document.getElementById('reg-msg').innerText = "Falscher E-Mail Code!";
+                return document.getElementById('reg-msg').innerText = "Falscher Code!";
             }
             try {
                 const email = document.getElementById('reg-email').value;
                 const pw = document.getElementById('reg-pass').value;
-                const vorname = document.getElementById('reg-vorname').value;
-                const phone = document.getElementById('reg-phone').value;
-
-                document.getElementById('reg-msg').innerText = "Erstelle Account...";
+                const vorname = document.getElementById('reg-vorname-email').value;
                 const userCred = await createUserWithEmailAndPassword(auth, email, pw);
                 await updateProfile(userCred.user, { displayName: vorname });
-                
-                if (phone && phone.trim() !== "") {
-                    document.getElementById('verify-box').style.display = 'none';
-                    document.getElementById('phone-verify-box').style.display = 'block';
-                    document.getElementById('reg-msg').style.color = "var(--text-dark)";
-                    document.getElementById('reg-msg').innerText = "Bereite SMS-Versand vor...";
+                location.reload(); 
+            } catch (e) { document.getElementById('reg-msg').innerText = "Fehler: " + e.message; }
+        };
 
-                    window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { 'size': 'invisible' });
-                    window.confirmationResult = await linkWithPhoneNumber(userCred.user, phone, window.recaptchaVerifier);
-                    
-                    document.getElementById('reg-msg').style.color = "#27ae60";
-                    document.getElementById('reg-msg').innerText = "SMS gesendet! Bitte Code eingeben.";
-                } else {
-                    location.reload(); 
-                }
-            } catch (e) { 
+        // 1B. Registrierung Telefon (SMS)
+        document.getElementById('btn-reg-send-sms').onclick = async () => {
+            const phone = document.getElementById('reg-phone').value;
+            const vorname = document.getElementById('reg-vorname-phone').value;
+            if(!vorname || !phone.startsWith('+')) {
                 document.getElementById('reg-msg').style.color = "#e74c3c";
-                document.getElementById('reg-msg').innerText = "Fehler: " + e.message; 
+                return document.getElementById('reg-msg').innerText = "Bitte Vorname & Nummer mit Ländercode (z.B. +49) angeben.";
+            }
+
+            document.getElementById('reg-msg').style.color = "var(--text-dark)";
+            document.getElementById('reg-msg').innerText = "Verbinde mit Server... Bitte warten.";
+            initRecaptcha();
+
+            try {
+                window.confirmationResult = await signInWithPhoneNumber(auth, phone, window.recaptchaVerifier);
+                document.getElementById('btn-reg-send-sms').style.display = 'none';
+                document.getElementById('reg-sms-verify-box').style.display = 'block';
+                document.getElementById('reg-msg').style.color = "#27ae60";
+                document.getElementById('reg-msg').innerText = "SMS gesendet!";
+            } catch (e) {
+                document.getElementById('reg-msg').style.color = "#e74c3c";
+                document.getElementById('reg-msg').innerText = "SMS-Fehler: " + e.message;
             }
         };
 
-        document.getElementById('btn-verify-sms').onclick = async () => {
-            const smsCode = document.getElementById('verify-sms-input').value;
+        document.getElementById('btn-reg-verify-sms').onclick = async () => {
+            const code = document.getElementById('reg-sms-code').value;
+            const vorname = document.getElementById('reg-vorname-phone').value;
             try {
-                await window.confirmationResult.confirm(smsCode);
+                const result = await window.confirmationResult.confirm(code);
+                await updateProfile(result.user, { displayName: vorname });
                 location.reload();
             } catch (e) {
                 document.getElementById('reg-msg').style.color = "#e74c3c";
-                document.getElementById('reg-msg').innerText = "Falscher SMS Code. " + e.message;
+                document.getElementById('reg-msg').innerText = "Falscher SMS Code.";
             }
         };
 
-        document.getElementById('btn-login').onclick = () => {
+        // ==========================================
+        // 2. LOGIN
+        // ==========================================
+
+        // 2A. Login E-Mail
+        document.getElementById('btn-login-email').onclick = () => {
             signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-pass').value)
-            .catch(() => { document.getElementById('login-msg').innerText = "Login fehlgeschlagen. Daten prüfen."; });
+            .catch(() => { 
+                document.getElementById('login-msg').style.color = "#e74c3c";
+                document.getElementById('login-msg').innerText = "Login fehlgeschlagen. Daten prüfen."; 
+            });
         };
+
+        // 2B. Login Telefon
+        document.getElementById('btn-login-send-sms').onclick = async () => {
+            const phone = document.getElementById('login-phone').value;
+            if(!phone.startsWith('+')) {
+                document.getElementById('login-msg').style.color = "#e74c3c";
+                return document.getElementById('login-msg').innerText = "Nummer muss mit Ländercode (z.B. +49) beginnen.";
+            }
+            
+            document.getElementById('login-msg').style.color = "var(--text-dark)";
+            document.getElementById('login-msg').innerText = "Verbinde mit Server...";
+            initRecaptcha();
+
+            try {
+                window.confirmationResult = await signInWithPhoneNumber(auth, phone, window.recaptchaVerifier);
+                document.getElementById('btn-login-send-sms').style.display = 'none';
+                document.getElementById('login-sms-verify-box').style.display = 'block';
+                document.getElementById('login-msg').style.color = "#27ae60";
+                document.getElementById('login-msg').innerText = "SMS gesendet!";
+            } catch (e) {
+                document.getElementById('login-msg').style.color = "#e74c3c";
+                document.getElementById('login-msg').innerText = "SMS-Fehler: " + e.message;
+            }
+        };
+
+        document.getElementById('btn-login-verify-sms').onclick = async () => {
+            const code = document.getElementById('login-sms-code').value;
+            try {
+                await window.confirmationResult.confirm(code);
+                // OnAuthStateChanged übernimmt den Rest
+            } catch (e) {
+                document.getElementById('login-msg').style.color = "#e74c3c";
+                document.getElementById('login-msg').innerText = "Falscher SMS Code.";
+            }
+        };
+
+        // ==========================================
+        // SYSTEM LOGIK
+        // ==========================================
 
         window.logout = () => signOut(auth);
 
@@ -360,6 +465,7 @@
             document.getElementById('top-logout-btn').style.display = 'none';
             document.getElementById('collection-btn').style.display = 'none';
             window.currentUser = null;
+            setTimeout(() => { if (typeof window.startMapEngine === "function") window.startMapEngine(); }, 50);
         };
 
         onAuthStateChanged(auth, async (user) => {
@@ -372,6 +478,7 @@
                 document.getElementById('top-login-btn').style.display = 'none';
                 document.getElementById('top-logout-btn').style.display = 'block';
                 document.getElementById('collection-btn').style.display = 'block'; 
+                setTimeout(() => { if (typeof window.startMapEngine === "function") window.startMapEngine(); }, 50);
             } else {
                 window.currentUser = null;
                 document.getElementById('auth-overlay').style.display = 'flex';
@@ -379,6 +486,7 @@
             }
         });
 
+        // NOTIZEN & LESEZEICHEN UI
         window.saveItemNote = async (title) => {
             if (!window.currentUser) return alert("Nur für angemeldete Nutzer verfügbar!");
             if (typeof window.userData.notes !== "object") window.userData.notes = {};
@@ -774,314 +882,324 @@
             }).join(" ");
         }
 
-        // --- MAP ENGINE START ---
-        const width = 1000;
-        const height = 600;
+        let mapInitialized = false;
 
-        const svg = d3.select("#map-canvas")
-            .append("svg")
-            .attr("viewBox", `0 0 ${width} ${height}`)
-            .attr("preserveAspectRatio", "xMidYMid meet")
-            .on("click", function(event) {
-                if (event.target.tagName.toLowerCase() === 'svg') {
-                    document.getElementById("country-search").value = "";
-                    window.clearMapAndUI();
-                }
-            });
+        window.startMapEngine = function() {
+            if(mapInitialized) return;
+            mapInitialized = true;
 
-        const g = svg.append("g");
-        const projection = d3.geoMercator().scale(140).translate([width / 2, height / 1.5]);
-        const path = d3.geoPath().projection(projection);
-        const tooltip = d3.select("#tooltip");
+            const width = 1000;
+            const height = 600;
 
-        const zoom = d3.zoom().scaleExtent([1, 8]).translateExtent([[-width * 0.1, -height * 0.1], [width * 1.1, height * 1.2]]) 
-            .on("zoom", (event) => { g.attr("transform", event.transform); });
-        svg.call(zoom);
+            const svg = d3.select("#map-canvas")
+                .append("svg")
+                .attr("viewBox", `0 0 ${width} ${height}`)
+                .attr("preserveAspectRatio", "xMidYMid meet")
+                .on("click", function(event) {
+                    if (event.target.tagName.toLowerCase() === 'svg') {
+                        document.getElementById("country-search").value = "";
+                        window.clearMapAndUI();
+                    }
+                });
 
-        window.clearMapAndUI = function() {
-            g.selectAll("path").classed("highlighted-country highlighted-mining highlighted-manufacturing highlighted-both", false);
-            document.getElementById("map-legend").style.display = "none";
-            document.getElementById("default-legend").style.display = "block";
-            document.getElementById("search-results").style.display = "none";
-            document.getElementById("country-details").style.display = "none";
-            document.getElementById("default-message").style.display = "block";
-        };
+            const g = svg.append("g");
+            const projection = d3.geoMercator().scale(140).translate([width / 2, height / 1.5]);
+            const path = d3.geoPath().projection(projection);
+            const tooltip = d3.select("#tooltip");
 
-        window.handleTagClick = function(type, value) {
-            window.clearMapAndUI(); 
-            document.getElementById("country-search").value = value;
-            
-            if (type === 'mineral') showMineralInfo(value);
-            else if (type === 'country') {
-                let enName = Object.keys(countryTranslations).find(key => countryTranslations[key] === value);
-                if (!enName) enName = value;
-                showCountryInfo(enName);
-            } else if (type === 'component') {
-                const comp = Object.values(cpuData).find(c => c.name === value);
-                if (comp) showComponentInfo(comp);
-            }
-        };
+            const zoom = d3.zoom().scaleExtent([1, 8]).translateExtent([[-width * 0.1, -height * 0.1], [width * 1.1, height * 1.2]]) 
+                .on("zoom", (event) => { g.attr("transform", event.transform); });
+            svg.call(zoom);
 
-        function autoLinkText(text) {
-            if (!text || text === "-") return text;
-            const materials = getAllUniqueMaterials();
-            const components = Object.values(cpuData).map(c => c.name);
-            const terms = [...components, ...materials].sort((a, b) => b.length - a.length);
-            
-            let placeholders = [];
-            terms.forEach((term) => {
-                const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                const regex = new RegExp(`(${escapedTerm})`, 'gi');
-                if (regex.test(text)) {
-                    text = text.replace(regex, function(match) {
-                        const isMaterial = materials.some(m => m.toLowerCase() === term.toLowerCase());
-                        const originalTerm = isMaterial ? materials.find(m => m.toLowerCase() === term.toLowerCase()) : components.find(c => c.toLowerCase() === term.toLowerCase());
-                        const type = isMaterial ? 'mineral' : 'component';
-                        placeholders.push(`<span class="text-link-tag" onclick="window.handleTagClick('${type}', '${originalTerm}')">${match}</span>`);
-                        return `__PLCHLDR${placeholders.length - 1}__`;
-                    });
-                }
-            });
-            placeholders.forEach((html, i) => { text = text.replace(new RegExp(`__PLCHLDR${i}__`, 'g'), html); });
-            return text;
-        }
+            window.clearMapAndUI = function() {
+                g.selectAll("path").classed("highlighted-country highlighted-mining highlighted-manufacturing highlighted-both", false);
+                document.getElementById("map-legend").style.display = "none";
+                document.getElementById("default-legend").style.display = "block";
+                document.getElementById("search-results").style.display = "none";
+                document.getElementById("country-details").style.display = "none";
+                document.getElementById("default-message").style.display = "block";
+            };
 
-        function highlightRoles(miningArray, manufacturingArray) {
-            g.selectAll("path").each(function(d) {
-                const countryEn = d.properties.name;
-                const countryDe = countryTranslations[countryEn] || countryEn;
-                const isMining = miningArray.includes(countryDe);
-                const isManufacturing = manufacturingArray.includes(countryDe);
+            window.handleTagClick = function(type, value) {
+                window.clearMapAndUI(); 
+                document.getElementById("country-search").value = value;
                 
-                if (isMining && isManufacturing) d3.select(this).classed("highlighted-both", true).raise();
-                else if (isMining) d3.select(this).classed("highlighted-mining", true).raise();
-                else if (isManufacturing) d3.select(this).classed("highlighted-manufacturing", true).raise();
-            });
-            
-            document.getElementById("default-legend").style.display = "none";
-            document.getElementById("map-legend").style.display = "block";
-        }
+                if (type === 'mineral') showMineralInfo(value);
+                else if (type === 'country') {
+                    let enName = Object.keys(countryTranslations).find(key => countryTranslations[key] === value);
+                    if (!enName) enName = value;
+                    showCountryInfo(enName);
+                } else if (type === 'component') {
+                    const comp = Object.values(cpuData).find(c => c.name === value);
+                    if (comp) showComponentInfo(comp);
+                }
+            };
 
-        function renderDetails(title, sections) {
-            document.getElementById("default-message").style.display = "none";
-            document.getElementById("search-results").style.display = "none";
-            const container = document.getElementById("country-details");
-            container.style.display = "block";
-            
-            const isBookmarked = window.userData && window.userData.bookmarks && window.userData.bookmarks.includes(title);
-            const starHtml = window.currentUser ? `<span id="btn-star" class="bookmark-btn" onclick="window.toggleBookmark('${title}')" style="float:right;" title="Zu meiner Sammlung hinzufügen">${isBookmarked ? '⭐' : '☆'}</span>` : '';
-
-            let html = `<h2 style="color: #e74c3c; margin-bottom: 5px;">${title} ${starHtml}</h2>`;
-            sections.forEach(sec => {
-                const headerColor = sec.color || "#2980b9";
-                html += `<h3 style="color: ${headerColor}; border-bottom: 2px solid #eee; padding-bottom: 5px; font-size: 1.1em; margin-top: 20px;">${sec.title}</h3>`;
-                html += `<p style="line-height: 1.5; color: #34495e; margin-top: 5px;">${sec.content}</p>`;
-            });
-
-            if (window.currentUser) {
-                const safeTitle = title.replace(/[^a-zA-Z0-9]/g, '-');
-                const currentNote = (window.userData && window.userData.notes && window.userData.notes[title]) ? window.userData.notes[title] : "";
-                html += `
-                <div style="margin-top: 25px; padding: 15px; background: #fdf2f0; border-radius: 8px; border: 1px solid #fadbd8;">
-                    <h3 style="color: #e67e22; margin-top: 0; font-size: 1.1em;">Meine Notizen zu diesem Eintrag</h3>
-                    <textarea id="note-${safeTitle}" style="width: 100%; height: 80px; padding: 10px; border: 1px solid #bdc3c7; border-radius: 4px; box-sizing: border-box; font-family: inherit;">${currentNote}</textarea>
-                    <div style="display: flex; align-items: center; margin-top: 8px;">
-                        <button onclick="window.saveItemNote('${title}')" style="background: #27ae60; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size:14px;">Speichern</button>
-                        <span id="msg-${safeTitle}" style="margin-left: 10px; color: #27ae60; font-size: 14px; font-weight: bold;"></span>
-                    </div>
-                </div>`;
-            } else {
-                html += `<div style="margin-top: 25px; padding: 15px; background: #ecf0f1; border-radius: 8px; font-size: 0.9em; color: #7f8c8d; text-align: center;">
-                    <em>Melde dich an, um eigene Notizen und Lesezeichen zu diesem Eintrag zu speichern.</em>
-                </div>`;
+            function autoLinkText(text) {
+                if (!text || text === "-") return text;
+                const materials = getAllUniqueMaterials();
+                const components = Object.values(cpuData).map(c => c.name);
+                const terms = [...components, ...materials].sort((a, b) => b.length - a.length);
+                
+                let placeholders = [];
+                terms.forEach((term) => {
+                    const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    const regex = new RegExp(`(${escapedTerm})`, 'gi');
+                    if (regex.test(text)) {
+                        text = text.replace(regex, function(match) {
+                            const isMaterial = materials.some(m => m.toLowerCase() === term.toLowerCase());
+                            const originalTerm = isMaterial ? materials.find(m => m.toLowerCase() === term.toLowerCase()) : components.find(c => c.toLowerCase() === term.toLowerCase());
+                            const type = isMaterial ? 'mineral' : 'component';
+                            placeholders.push(`<span class="text-link-tag" onclick="window.handleTagClick('${type}', '${originalTerm}')">${match}</span>`);
+                            return `__PLCHLDR${placeholders.length - 1}__`;
+                        });
+                    }
+                });
+                placeholders.forEach((html, i) => { text = text.replace(new RegExp(`__PLCHLDR${i}__`, 'g'), html); });
+                return text;
             }
 
-            container.innerHTML = html;
-        }
-
-        function showCountryInfo(countryEn) {
-            const countryDe = countryTranslations[countryEn] || countryEn;
-            const info = getCountryInfo(countryDe);
-            const narrative = countryNarratives[countryEn] || countryNarratives[countryDe];
-
-            document.getElementById("map-legend").style.display = "none";
-            document.getElementById("default-legend").style.display = "none";
-            
-            g.selectAll("path").filter(p => p.properties.name === countryEn).classed("highlighted-country", true).raise();
-
-            let sections = [];
-            if (info.components.length > 0) {
-                sections.push({ title: "Wird hier gefördert (Rohstoffe)", content: generateTags(info.mining, 'mineral', 'Kein primärer Abbau erfasst.') });
-                sections.push({ title: "Wird hier verarbeitet / montiert", content: generateTags(info.manufacturing.map(c => c.name), 'component', 'Keine Endmontage erfasst.') });
-                sections.push({ title: "Beteiligt an Smartphone-Bauteilen", content: generateTags(info.components.map(c => c.name), 'component', 'Keine Beteiligung.') });
-            } else {
-                sections.push({ title: "Status", content: "Dieses Land spielt in der abgebildeten Smartphone-Lieferkette keine erfasste Hauptrolle." });
-            }
-
-            if (narrative) {
-                sections.push({ title: "Zusammenfassung Abbau", content: autoLinkText(narrative.abbau) });
-                sections.push({ title: "Zusammenfassung Verarbeitung", content: autoLinkText(narrative.verarbeitung) });
-                sections.push({ title: "Verwendung im Gerät", content: autoLinkText(narrative.verwendung) });
-                sections.push({ title: "Arbeitsbedingungen & Ethik", content: narrative.arbeitsbedingungen, color: "#e67e22" });
-            } else if (info.components.length > 0) {
-                sections.push({ title: "Arbeitsbedingungen & Ethik", content: "Keine spezifischen Daten zu den Arbeitsbedingungen in diesem Land verfügbar.", color: "#e67e22" });
-            }
-            renderDetails(`Land: ${countryDe}`, sections);
-        }
-
-        function showComponentInfo(comp) {
-            highlightRoles(comp.geography.mining, comp.geography.manufacturing);
-            
-            let transportDesc = "";
-            const highValueAir = ["Smartphone-CPU", "Smartphone-GPU", "Smartphone-SoC", "Smartphone-NPU", "LPDDR-RAM", "NAND-Flash-Speicher", "Kameramodul (Sensor-Einheit)", "5G-Modem", "OLED-Display-Panel", "MEMS-Gyroskop", "MEMS-Beschleunigungssensor", "Annäherungssensor (IR)", "Umgebungslichtsensor (ALS)", "NFC-Chip"];
-            const hazmatSea = ["Lithium-Ionen-Akku"]; 
-            
-            if (hazmatSea.includes(comp.name)) {
-                transportDesc = "<b>Seefracht (Gefahrgut):</b> Akkus unterliegen strengen IATA-Flugverboten. Sie müssen interkontinental fast ausschließlich sicher in Spezial-Containern verschifft werden.<br><br><b>Gefahrgut-LKW:</b> Wird für den Transport über verbundene Landmassen genutzt.";
-            } else if (highValueAir.includes(comp.name)) {
-                transportDesc = "<b>Luftfracht:</b> Dieses Bauteil ist extrem wertvoll, sensibel und leicht. Um in den kurzen Produktzyklen mithalten zu können, wird es weltweit geflogen.<br><br><b>Sicherheits-LKW:</b> Übernimmt die kontinentale Feinverteilung von den Flughäfen zu den Fabriken.";
-            } else {
-                transportDesc = "<b>Container-Seefracht:</b> Wird für Ozean-Routen genutzt, da das Bauteil schwerer oder in Massen benötigt wird.<br><br><b>LKW / Güterzug:</b> Übernimmt den Massentransport auf zusammenhängenden Landmassen.";
-            }
-
-            renderDetails(`Bauteil: ${comp.name}`, [
-                { title: "System-Kategorie", content: comp.category },
-                { title: "Verwendete Rohstoffe", content: generateTags(comp.materials, 'mineral', 'Keine Rohstoffe erfasst.') },
-                { title: "Abbau-Länder (Mining)", content: generateTags(comp.geography.mining, 'country', 'Keine Länder erfasst.') },
-                { title: "Verarbeitungs-Länder (Manufacturing)", content: generateTags(comp.geography.manufacturing, 'country', 'Keine Länder erfasst.') },
-                { title: "Technische Details", content: autoLinkText(comp.technicalSummary) },
-                { title: "Logistik & Transportweg", content: transportDesc, color: "#27ae60" } 
-            ]);
-        }
-
-        function showMineralInfo(mineral) {
-            const mapData = getMapDataForMaterial(mineral);
-            highlightRoles(mapData.miningLocations, mapData.manufacturingLocations);
-            
-            const usedInComps = Object.values(cpuData).filter(c => c.materials.includes(mineral)).map(c => c.name);
-            const mineralTransportDesc = "<b>Massengut-Frachter (Bulk):</b> Rohe Mineralien und Erze sind extrem schwer und haben einen geringen Kilo-Wert. Sie werden fast ausschließlich über die Weltmeere verschifft.<br><br><b>Güterzug / LKW (Schwerlast):</b> Übernimmt den Transport von den Minen zu den Häfen und Schmelzanlagen.";
-
-            renderDetails(`Rohstoff: ${mineral}`, [
-                { title: "Verwendet in Smartphone-Bauteilen", content: generateTags(usedInComps, 'component', 'Keine Bauteile erfasst.') },
-                { title: "Abbau-Länder", content: generateTags(mapData.miningLocations, 'country', 'Keine spezifischen Länder erfasst (globaler Markt).') },
-                { title: "Veredelungs- & Verarbeitungs-Länder", content: generateTags(mapData.manufacturingLocations, 'country', 'Keine Länder erfasst.') },
-                { title: "Logistik & Transportweg", content: mineralTransportDesc, color: "#27ae60" }
-            ]);
-        }
-
-        // Echte Weltkarte ONLINE abrufen
-        d3.json("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson").then(function(data) {
-            document.getElementById("loading").style.display = "none";
-
-            g.selectAll("path").data(data.features).enter().append("path").attr("d", path)
-                .attr("class", function(d) {
+            function highlightRoles(miningArray, manufacturingArray) {
+                g.selectAll("path").each(function(d) {
                     const countryEn = d.properties.name;
                     const countryDe = countryTranslations[countryEn] || countryEn;
+                    const isMining = miningArray.includes(countryDe);
+                    const isManufacturing = manufacturingArray.includes(countryDe);
                     
-                    const hasNarrative = !!(countryNarratives[countryEn] || countryNarratives[countryDe]);
-                    const compInfo = getCountryInfo(countryDe);
-                    const hasComponent = compInfo.components.length > 0;
-                    
-                    let baseClass = "country ";
-                    if (hasNarrative) return baseClass + "role-major";
-                    else if (hasComponent) return baseClass + "role-minor";
-                    else return baseClass + "role-none";
-                })
-                .on("mouseover", function(event, d) {
-                    const countryDe = countryTranslations[d.properties.name] || d.properties.name;
-                    tooltip.style("opacity", 1).html(countryDe);
-                    if (!d3.select(this).attr("class").includes("highlighted")) d3.select(this).raise(); 
-                })
-                .on("mousemove", function(event) { tooltip.style("left", (event.pageX + 15) + "px").style("top", (event.pageY - 20) + "px"); })
-                .on("mouseout", function() { tooltip.style("opacity", 0); })
-                .on("click", function(event, d) {
-                    window.clearMapAndUI();
-                    const countryEn = d.properties.name;
-                    document.getElementById("country-search").value = countryTranslations[countryEn] || countryEn;
-                    showCountryInfo(countryEn);
+                    if (isMining && isManufacturing) d3.select(this).classed("highlighted-both", true).raise();
+                    else if (isMining) d3.select(this).classed("highlighted-mining", true).raise();
+                    else if (isManufacturing) d3.select(this).classed("highlighted-manufacturing", true).raise();
                 });
-
-            const searchInputObj = document.getElementById("country-search");
-            
-            searchInputObj.addEventListener("input", function(e) {
-                const term = e.target.value.toLowerCase().trim();
-                const resultsContainer = document.getElementById("search-results");
                 
-                window.clearMapAndUI();
-
-                if (term === "") { return; }
-
-                resultsContainer.style.display = "block";
-                document.getElementById("default-message").style.display = "none";
-                document.getElementById("country-details").style.display = "none";
                 document.getElementById("default-legend").style.display = "none";
-                resultsContainer.innerHTML = "<h3>Suchergebnisse:</h3>";
+                document.getElementById("map-legend").style.display = "block";
+            }
 
-                function calcScore(searchTerm, textStr) {
-                    if (!textStr) return 0;
-                    textStr = String(textStr).toLowerCase();
-                    if (textStr === searchTerm) return 100;
-                    if (textStr.startsWith(searchTerm)) return 50;
-                    if (textStr.includes(searchTerm)) return 10;
-                    return 0;
-                }
-
-                const searchResults = [];
-                Object.values(cpuData).forEach(c => {
-                    let score = Math.max(0, calcScore(term, c.name));
-                    if (c.category.toLowerCase().includes(term)) score = Math.max(score, 5);
-                    (componentTranslations[c.name] || []).forEach(t => { const s = calcScore(term, t); if (s > 0) score = Math.max(score, s - 1); });
-                    if (score > 0) searchResults.push({ text: c.name, typeLabel: "Bauteil", typeClass: "result-bauteil", score: score, onClickFn: () => showComponentInfo(c) });
-                });
-
-                allMaterials.forEach(m => {
-                    let score = Math.max(0, calcScore(term, m));
-                    (materialTranslations[m] || []).forEach(t => { const s = calcScore(term, t); if (s > 0) score = Math.max(score, s - 1); });
-                    if (score > 0) searchResults.push({ text: m, typeLabel: "Rohstoff", typeClass: "result-rohstoff", score: score, onClickFn: () => showMineralInfo(m) });
-                });
-
-                g.selectAll("path").each(function(d) {
-                    const en = d.properties.name;
-                    const de = countryTranslations[en] || en;
-                    let score = Math.max(0, calcScore(term, de));
-                    const enScore = calcScore(term, en);
-                    if (enScore > 0) score = Math.max(score, enScore - 1);
-                    if (score > 0) searchResults.push({ text: de, typeLabel: "Land", typeClass: "result-land", score: score, onClickFn: () => showCountryInfo(en) });
-                });
-
-                if (searchResults.length === 0) {
-                    resultsContainer.innerHTML += "<p style='color: #7f8c8d; font-style: italic;'>Keine Treffer gefunden.</p>";
-                    return;
-                }
-
-                const uniqueResults = [];
-                const seen = new Set();
-                searchResults.forEach(r => {
-                    const id = r.typeLabel + ":" + r.text;
-                    if (!seen.has(id)) { seen.add(id); uniqueResults.push(r); }
-                });
-
-                uniqueResults.sort((a, b) => b.score !== a.score ? b.score - a.score : a.text.localeCompare(b.text));
+            function renderDetails(title, sections) {
+                document.getElementById("default-message").style.display = "none";
+                document.getElementById("search-results").style.display = "none";
+                const container = document.getElementById("country-details");
+                container.style.display = "block";
                 
-                const fragment = document.createDocumentFragment();
-                uniqueResults.forEach(item => {
-                    const div = document.createElement("div");
-                    div.className = `search-result-item ${item.typeClass}`;
-                    div.innerHTML = `<div class="search-type-label">${item.typeLabel}</div>${item.text}`;
-                    div.onclick = () => { 
-                        window.clearMapAndUI();
-                        document.getElementById("country-search").value = item.text; 
-                        item.onClickFn(); 
-                    };
-                    fragment.appendChild(div);
-                });
-                resultsContainer.appendChild(fragment);
-            });
+                const isBookmarked = window.userData && window.userData.bookmarks && window.userData.bookmarks.includes(title);
+                const starHtml = window.currentUser ? `<span id="btn-star" class="bookmark-btn" onclick="window.toggleBookmark('${title}')" style="float:right;" title="Zu meiner Sammlung hinzufügen">${isBookmarked ? '⭐' : '☆'}</span>` : '';
 
-        }).catch(function(error) {
-            document.getElementById("loading").innerText = "Fehler: Keine Internetverbindung oder Datenquelle nicht erreichbar.";
-            document.getElementById("loading").style.color = "red";
-        });
+                let html = `<h2 style="color: #e74c3c; margin-bottom: 5px;">${title} ${starHtml}</h2>`;
+                sections.forEach(sec => {
+                    const headerColor = sec.color || "#2980b9";
+                    html += `<h3 style="color: ${headerColor}; border-bottom: 2px solid #eee; padding-bottom: 5px; font-size: 1.1em; margin-top: 20px;">${sec.title}</h3>`;
+                    html += `<p style="line-height: 1.5; color: #34495e; margin-top: 5px;">${sec.content}</p>`;
+                });
+
+                if (window.currentUser) {
+                    const safeTitle = title.replace(/[^a-zA-Z0-9]/g, '-');
+                    const currentNote = (window.userData && window.userData.notes && window.userData.notes[title]) ? window.userData.notes[title] : "";
+                    html += `
+                    <div style="margin-top: 25px; padding: 15px; background: #fdf2f0; border-radius: 8px; border: 1px solid #fadbd8;">
+                        <h3 style="color: #e67e22; margin-top: 0; font-size: 1.1em;">Meine Notizen zu diesem Eintrag</h3>
+                        <textarea id="note-${safeTitle}" style="width: 100%; height: 80px; padding: 10px; border: 1px solid #bdc3c7; border-radius: 4px; box-sizing: border-box; font-family: inherit;">${currentNote}</textarea>
+                        <div style="display: flex; align-items: center; margin-top: 8px;">
+                            <button onclick="window.saveItemNote('${title}')" style="background: #27ae60; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size:14px;">Speichern</button>
+                            <span id="msg-${safeTitle}" style="margin-left: 10px; color: #27ae60; font-size: 14px; font-weight: bold;"></span>
+                        </div>
+                    </div>`;
+                } else {
+                    html += `<div style="margin-top: 25px; padding: 15px; background: #ecf0f1; border-radius: 8px; font-size: 0.9em; color: #7f8c8d; text-align: center;">
+                        <em>Melde dich an, um eigene Notizen und Lesezeichen zu diesem Eintrag zu speichern.</em>
+                    </div>`;
+                }
+
+                container.innerHTML = html;
+            }
+
+            function showCountryInfo(countryEn) {
+                const countryDe = countryTranslations[countryEn] || countryEn;
+                const info = getCountryInfo(countryDe);
+                const narrative = countryNarratives[countryEn] || countryNarratives[countryDe];
+
+                document.getElementById("map-legend").style.display = "none";
+                document.getElementById("default-legend").style.display = "none";
+                
+                g.selectAll("path").filter(p => p.properties.name === countryEn).classed("highlighted-country", true).raise();
+
+                let sections = [];
+                if (info.components.length > 0) {
+                    sections.push({ title: "Wird hier gefördert (Rohstoffe)", content: generateTags(info.mining, 'mineral', 'Kein primärer Abbau erfasst.') });
+                    sections.push({ title: "Wird hier verarbeitet / montiert", content: generateTags(info.manufacturing.map(c => c.name), 'component', 'Keine Endmontage erfasst.') });
+                    sections.push({ title: "Beteiligt an Smartphone-Bauteilen", content: generateTags(info.components.map(c => c.name), 'component', 'Keine Beteiligung.') });
+                } else {
+                    sections.push({ title: "Status", content: "Dieses Land spielt in der abgebildeten Smartphone-Lieferkette keine erfasste Hauptrolle." });
+                }
+
+                if (narrative) {
+                    sections.push({ title: "Zusammenfassung Abbau", content: autoLinkText(narrative.abbau) });
+                    sections.push({ title: "Zusammenfassung Verarbeitung", content: autoLinkText(narrative.verarbeitung) });
+                    sections.push({ title: "Verwendung im Gerät", content: autoLinkText(narrative.verwendung) });
+                    sections.push({ title: "Arbeitsbedingungen & Ethik", content: narrative.arbeitsbedingungen, color: "#e67e22" });
+                } else if (info.components.length > 0) {
+                    sections.push({ title: "Arbeitsbedingungen & Ethik", content: "Keine spezifischen Daten zu den Arbeitsbedingungen in diesem Land verfügbar.", color: "#e67e22" });
+                }
+                renderDetails(`Land: ${countryDe}`, sections);
+            }
+
+            function showComponentInfo(comp) {
+                highlightRoles(comp.geography.mining, comp.geography.manufacturing);
+                
+                let transportDesc = "";
+                const highValueAir = ["Smartphone-CPU", "Smartphone-GPU", "Smartphone-SoC", "Smartphone-NPU", "LPDDR-RAM", "NAND-Flash-Speicher", "Kameramodul (Sensor-Einheit)", "5G-Modem", "OLED-Display-Panel", "MEMS-Gyroskop", "MEMS-Beschleunigungssensor", "Annäherungssensor (IR)", "Umgebungslichtsensor (ALS)", "NFC-Chip"];
+                const hazmatSea = ["Lithium-Ionen-Akku"]; 
+                
+                if (hazmatSea.includes(comp.name)) {
+                    transportDesc = "<b>Seefracht (Gefahrgut):</b> Akkus unterliegen strengen IATA-Flugverboten. Sie müssen interkontinental fast ausschließlich sicher in Spezial-Containern verschifft werden.<br><br><b>Gefahrgut-LKW:</b> Wird für den Transport über verbundene Landmassen genutzt.";
+                } else if (highValueAir.includes(comp.name)) {
+                    transportDesc = "<b>Luftfracht:</b> Dieses Bauteil ist extrem wertvoll, sensibel und leicht. Um in den kurzen Produktzyklen mithalten zu können, wird es weltweit geflogen.<br><br><b>Sicherheits-LKW:</b> Übernimmt die kontinentale Feinverteilung von den Flughäfen zu den Fabriken.";
+                } else {
+                    transportDesc = "<b>Container-Seefracht:</b> Wird für Ozean-Routen genutzt, da das Bauteil schwerer oder in Massen benötigt wird.<br><br><b>LKW / Güterzug:</b> Übernimmt den Massentransport auf zusammenhängenden Landmassen.";
+                }
+
+                renderDetails(`Bauteil: ${comp.name}`, [
+                    { title: "System-Kategorie", content: comp.category },
+                    { title: "Verwendete Rohstoffe", content: generateTags(comp.materials, 'mineral', 'Keine Rohstoffe erfasst.') },
+                    { title: "Abbau-Länder (Mining)", content: generateTags(comp.geography.mining, 'country', 'Keine Länder erfasst.') },
+                    { title: "Verarbeitungs-Länder (Manufacturing)", content: generateTags(comp.geography.manufacturing, 'country', 'Keine Länder erfasst.') },
+                    { title: "Technische Details", content: autoLinkText(comp.technicalSummary) },
+                    { title: "Logistik & Transportweg", content: transportDesc, color: "#27ae60" } 
+                ]);
+            }
+
+            function showMineralInfo(mineral) {
+                const mapData = getMapDataForMaterial(mineral);
+                highlightRoles(mapData.miningLocations, mapData.manufacturingLocations);
+                
+                const usedInComps = Object.values(cpuData).filter(c => c.materials.includes(mineral)).map(c => c.name);
+                const mineralTransportDesc = "<b>Massengut-Frachter (Bulk):</b> Rohe Mineralien und Erze sind extrem schwer und haben einen geringen Kilo-Wert. Sie werden fast ausschließlich über die Weltmeere verschifft.<br><br><b>Güterzug / LKW (Schwerlast):</b> Übernimmt den Transport von den Minen zu den Häfen und Schmelzanlagen.";
+
+                renderDetails(`Rohstoff: ${mineral}`, [
+                    { title: "Verwendet in Smartphone-Bauteilen", content: generateTags(usedInComps, 'component', 'Keine Bauteile erfasst.') },
+                    { title: "Abbau-Länder", content: generateTags(mapData.miningLocations, 'country', 'Keine spezifischen Länder erfasst (globaler Markt).') },
+                    { title: "Veredelungs- & Verarbeitungs-Länder", content: generateTags(mapData.manufacturingLocations, 'country', 'Keine Länder erfasst.') },
+                    { title: "Logistik & Transportweg", content: mineralTransportDesc, color: "#27ae60" }
+                ]);
+            }
+
+            // Echte Weltkarte ONLINE abrufen
+            d3.json("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson").then(function(data) {
+                document.getElementById("loading").style.display = "none";
+
+                g.selectAll("path").data(data.features).enter().append("path").attr("d", path)
+                    .attr("class", function(d) {
+                        const countryEn = d.properties.name;
+                        const countryDe = countryTranslations[countryEn] || countryEn;
+                        
+                        const geoCenter = d3.geoCentroid(d);
+                        if(geoCenter && !isNaN(geoCenter[0])) { 
+                            countryCentroids[countryEn] = geoCenter; 
+                            countryCentroids[countryDe] = geoCenter; 
+                        }
+                        
+                        const hasNarrative = !!(countryNarratives[countryEn] || countryNarratives[countryDe]);
+                        const compInfo = getCountryInfo(countryDe);
+                        const hasComponent = compInfo.components.length > 0;
+                        
+                        let baseClass = "country ";
+                        if (hasNarrative) return baseClass + "role-major";
+                        else if (hasComponent) return baseClass + "role-minor";
+                        else return baseClass + "role-none";
+                    })
+                    .on("mouseover", function(event, d) {
+                        const countryDe = countryTranslations[d.properties.name] || d.properties.name;
+                        tooltip.style("opacity", 1).html(countryDe);
+                        if (!d3.select(this).attr("class").includes("highlighted")) d3.select(this).raise(); 
+                    })
+                    .on("mousemove", function(event) { tooltip.style("left", (event.pageX + 15) + "px").style("top", (event.pageY - 20) + "px"); })
+                    .on("mouseout", function() { tooltip.style("opacity", 0); })
+                    .on("click", function(event, d) {
+                        window.clearMapAndUI();
+                        const countryEn = d.properties.name;
+                        document.getElementById("country-search").value = countryTranslations[countryEn] || countryEn;
+                        showCountryInfo(countryEn);
+                    });
+
+                document.getElementById("country-search").addEventListener("input", function(e) {
+                    const term = e.target.value.toLowerCase().trim();
+                    const resultsContainer = document.getElementById("search-results");
+                    
+                    window.clearMapAndUI();
+
+                    if (term === "") { return; }
+
+                    resultsContainer.style.display = "block";
+                    document.getElementById("default-message").style.display = "none";
+                    document.getElementById("country-details").style.display = "none";
+                    document.getElementById("default-legend").style.display = "none";
+                    resultsContainer.innerHTML = "<h3>Suchergebnisse:</h3>";
+
+                    function calcScore(searchTerm, textStr) {
+                        if (!textStr) return 0;
+                        textStr = String(textStr).toLowerCase();
+                        if (textStr === searchTerm) return 100;
+                        if (textStr.startsWith(searchTerm)) return 50;
+                        if (textStr.includes(searchTerm)) return 10;
+                        return 0;
+                    }
+
+                    const searchResults = [];
+                    Object.values(cpuData).forEach(c => {
+                        let score = Math.max(0, calcScore(term, c.name));
+                        if (c.category.toLowerCase().includes(term)) score = Math.max(score, 5);
+                        (componentTranslations[c.name] || []).forEach(t => { const s = calcScore(term, t); if (s > 0) score = Math.max(score, s - 1); });
+                        if (score > 0) searchResults.push({ text: c.name, typeLabel: "Bauteil", typeClass: "result-bauteil", score: score, onClickFn: () => showComponentInfo(c) });
+                    });
+
+                    allMaterials.forEach(m => {
+                        let score = Math.max(0, calcScore(term, m));
+                        (materialTranslations[m] || []).forEach(t => { const s = calcScore(term, t); if (s > 0) score = Math.max(score, s - 1); });
+                        if (score > 0) searchResults.push({ text: m, typeLabel: "Rohstoff", typeClass: "result-rohstoff", score: score, onClickFn: () => showMineralInfo(m) });
+                    });
+
+                    g.selectAll("path").each(function(d) {
+                        const en = d.properties.name;
+                        const de = countryTranslations[en] || en;
+                        let score = Math.max(0, calcScore(term, de));
+                        const enScore = calcScore(term, en);
+                        if (enScore > 0) score = Math.max(score, enScore - 1);
+                        if (score > 0) searchResults.push({ text: de, typeLabel: "Land", typeClass: "result-land", score: score, onClickFn: () => showCountryInfo(en) });
+                    });
+
+                    if (searchResults.length === 0) {
+                        resultsContainer.innerHTML += "<p style='color: #7f8c8d; font-style: italic;'>Keine Treffer gefunden.</p>";
+                        return;
+                    }
+
+                    const uniqueResults = [];
+                    const seen = new Set();
+                    searchResults.forEach(r => {
+                        const id = r.typeLabel + ":" + r.text;
+                        if (!seen.has(id)) { seen.add(id); uniqueResults.push(r); }
+                    });
+
+                    uniqueResults.sort((a, b) => b.score !== a.score ? b.score - a.score : a.text.localeCompare(b.text));
+                    
+                    const fragment = document.createDocumentFragment();
+                    uniqueResults.forEach(item => {
+                        const div = document.createElement("div");
+                        div.className = `search-result-item ${item.typeClass}`;
+                        div.innerHTML = `<div class="search-type-label">${item.typeLabel}</div>${item.text}`;
+                        div.onclick = () => { 
+                            window.clearMapAndUI();
+                            document.getElementById("country-search").value = item.text; 
+                            item.onClickFn(); 
+                        };
+                        fragment.appendChild(div);
+                    });
+                    resultsContainer.appendChild(fragment);
+                });
+
+            }).catch(function(error) {
+                document.getElementById("loading").innerText = "Fehler: Keine Internetverbindung oder Datenquelle nicht erreichbar.";
+                document.getElementById("loading").style.color = "red";
+            });
+        };
     </script>
 </body>
 </html>
