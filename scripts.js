@@ -52,6 +52,14 @@
         .auth-message { margin-top: 10px; font-size: 14px; color: #e74c3c; font-weight: bold; min-height: 20px;}
         .verify-box { display: none; margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px; }
 
+        /* --- PROFIL OVERLAY --- */
+        #profile-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(44, 62, 80, 0.85); backdrop-filter: blur(8px);
+            z-index: 99999999; display: flex; justify-content: center; align-items: center;
+            display: none;
+        }
+
         /* --- MAP LAYOUT --- */
         #map-container {
             flex: 2; background-color: var(--bg-map); position: relative;
@@ -104,14 +112,13 @@
         
         #auth-status-bar {
             display: flex; justify-content: space-between; align-items: center; 
-            margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee;
+            margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 10px;
         }
-        #user-greeting { color: var(--primary); font-weight: bold; margin: 0; font-size: 0.9em; }
+        #user-greeting { color: var(--primary); font-weight: bold; margin: 0; font-size: 0.9em; flex: 1; }
 
         .info-section { display: none; margin-top: 25px; }
         #default-message { color: var(--text-light); font-style: italic; margin-top: 10px; background: #fdf2f0; padding: 15px; border-radius: 5px;}
         #search-results { display: none; margin-top: 20px; }
-        #search-results h3 { color: var(--text-dark); font-size: 1.2em; margin-bottom: 10px; }
         .search-result-item { padding: 12px 15px; margin-bottom: 8px; background-color: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 5px; cursor: pointer; transition: all 0.2s ease; font-size: 14px; color: var(--text-dark); }
         .search-result-item:hover { background-color: #eaf2f8; border-color: var(--border-light); }
         .search-result-item.result-land { border-left: 5px solid var(--primary); }
@@ -175,6 +182,17 @@
         </div>
     </div>
 
+    <div id="profile-overlay">
+        <div class="auth-container">
+            <h2>Profil bearbeiten</h2>
+            <input type="text" id="prof-name" placeholder="Neuer Anzeigename">
+            <input type="password" id="prof-pass" placeholder="Neues Passwort (optional, min. 6 Zeichen)">
+            <button class="auth-btn" id="btn-save-profile">Änderungen speichern</button>
+            <button class="auth-btn auth-btn-guest" onclick="window.closeProfile()">Abbrechen</button>
+            <div class="auth-message" id="prof-msg"></div>
+        </div>
+    </div>
+
     <div id="map-container">
         <div id="map-canvas"></div>
         <div id="search-container"><input type="text" id="country-search" placeholder="Land, Bauteil oder Mineral suchen..." autocomplete="off"></div>
@@ -197,8 +215,11 @@
     <div id="info-panel">
         <div id="auth-status-bar">
             <span id="user-greeting">Gastmodus (Notizen deaktiviert)</span>
-            <button id="top-login-btn" class="auth-btn" style="width: auto; padding: 6px 12px; margin: 0; display: none;" onclick="location.reload()">Login</button>
-            <button id="top-logout-btn" class="auth-btn" style="width: auto; padding: 6px 12px; margin: 0; background: #e74c3c; display: none;" onclick="window.logout()">Logout</button>
+            <div style="display: flex; gap: 8px;">
+                <button id="top-login-btn" class="auth-btn" style="width: auto; padding: 6px 12px; margin: 0; display: none;" onclick="location.reload()">Login</button>
+                <button id="top-profile-btn" class="auth-btn" style="width: auto; padding: 6px 12px; margin: 0; background: #2980b9; display: none;" onclick="window.openProfile()">Profil</button>
+                <button id="top-logout-btn" class="auth-btn" style="width: auto; padding: 6px 12px; margin: 0; background: #e74c3c; display: none;" onclick="window.logout()">Logout</button>
+            </div>
         </div>
 
         <h1>Schul-Projekt: Die globale Smartphone-Lieferkette</h1>
@@ -218,7 +239,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile, updatePassword, signOut } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
         // FIREBASE PROJEKT
@@ -235,7 +256,7 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // EMAILJS
+        // EMAILJS DATEN
         emailjs.init("nopyo_6xb4xN_cWdW");
         const EMAILJS_SERVICE_ID = "service_u23gqgg";
         const EMAILJS_TEMPLATE_ID = "template_i3ekbea";
@@ -244,6 +265,7 @@
         window.userData = { notes: {}, bookmarks: [] };
         let generatedCode = null;
 
+        // DATENBANK FUNKTIONEN
         async function loadUserData(uid) {
             try {
                 const docRef = doc(db, "users", uid);
@@ -264,6 +286,7 @@
             catch(e) { console.error("Speichern fehlgeschlagen", e); }
         }
 
+        // LOGIN / REGISTRIERUNG LOGIK
         window.toggleAuth = (showReg) => {
             document.getElementById('login-box').style.display = showReg ? 'none' : 'block';
             document.getElementById('register-box').style.display = showReg ? 'block' : 'none';
@@ -320,11 +343,64 @@
 
         window.continueAsGuest = () => {
             document.getElementById('auth-overlay').style.display = 'none';
+            document.body.classList.add('app-active');
             document.getElementById('user-greeting').innerText = "Gastmodus (Notizen deaktiviert)";
             document.getElementById('top-login-btn').style.display = 'block';
             document.getElementById('top-logout-btn').style.display = 'none';
+            document.getElementById('top-profile-btn').style.display = 'none';
             document.getElementById('collection-btn').style.display = 'none';
             window.currentUser = null;
+        };
+
+        // PROFIL BEARBEITEN
+        window.openProfile = () => {
+            document.getElementById('profile-overlay').style.display = 'flex';
+            document.getElementById('prof-msg').innerText = "";
+            document.getElementById('prof-pass').value = "";
+            if(window.currentUser) {
+                document.getElementById('prof-name').value = window.currentUser.displayName || "";
+            }
+        };
+
+        window.closeProfile = () => {
+            document.getElementById('profile-overlay').style.display = 'none';
+        };
+
+        document.getElementById('btn-save-profile').onclick = async () => {
+            if(!window.currentUser) return;
+            const newName = document.getElementById('prof-name').value;
+            const newPass = document.getElementById('prof-pass').value;
+            const msgBox = document.getElementById('prof-msg');
+
+            try {
+                let updated = false;
+                if(newName && newName !== window.currentUser.displayName) {
+                    await updateProfile(window.currentUser, { displayName: newName });
+                    document.getElementById('user-greeting').innerText = "Eingeloggt als: " + newName;
+                    updated = true;
+                }
+                if(newPass) {
+                    if(newPass.length < 6) throw new Error("Passwort muss mindestens 6 Zeichen lang sein.");
+                    await updatePassword(window.currentUser, newPass);
+                    updated = true;
+                }
+                
+                if(updated) {
+                    msgBox.style.color = "#27ae60";
+                    msgBox.innerText = "Erfolgreich gespeichert!";
+                    setTimeout(() => { window.closeProfile(); }, 1500);
+                } else {
+                    msgBox.style.color = "var(--text-light)";
+                    msgBox.innerText = "Keine Änderungen vorgenommen.";
+                }
+            } catch(e) {
+                msgBox.style.color = "#e74c3c";
+                if(e.code === 'auth/requires-recent-login') {
+                    msgBox.innerText = "Sicherheitssperre: Bitte logge dich einmal aus und wieder ein, um dein Passwort zu ändern.";
+                } else {
+                    msgBox.innerText = "Fehler: " + e.message;
+                }
+            }
         };
 
         onAuthStateChanged(auth, async (user) => {
@@ -332,16 +408,21 @@
                 window.currentUser = user;
                 await loadUserData(user.uid); 
                 document.getElementById('auth-overlay').style.display = 'none';
+                document.body.classList.add('app-active');
                 document.getElementById('user-greeting').innerText = "Eingeloggt als: " + (user.displayName || "Nutzer");
                 document.getElementById('top-login-btn').style.display = 'none';
                 document.getElementById('top-logout-btn').style.display = 'block';
+                document.getElementById('top-profile-btn').style.display = 'block';
                 document.getElementById('collection-btn').style.display = 'block'; 
             } else {
                 window.currentUser = null;
                 document.getElementById('auth-overlay').style.display = 'flex';
+                document.getElementById('profile-overlay').style.display = 'none';
+                document.body.classList.remove('app-active');
             }
         });
 
+        // NOTIZEN & LESEZEICHEN
         window.saveItemNote = async (title) => {
             if (!window.currentUser) return alert("Nur für angemeldete Nutzer verfügbar!");
             if (typeof window.userData.notes !== "object") window.userData.notes = {};
@@ -406,7 +487,6 @@
     </script>
 
     <script>
-        // SOFORTIGER START DER KARTE IM HINTERGRUND
         document.addEventListener("DOMContentLoaded", () => {
             window.startMapEngine();
         });
@@ -422,6 +502,7 @@
                 searchInputObj.addEventListener(evt, (e) => e.stopPropagation());
             });
 
+            // DATENSÄTZE
             const countryTranslations = {
                 "Afghanistan": "Afghanistan", "Albania": "Albanien", "Algeria": "Algerien", "Angola": "Angola", "Antarctica": "Antarktis", "Argentina": "Argentinien", "Armenia": "Armenien", "Australia": "Australien", "Austria": "Österreich", "Azerbaijan": "Aserbaidschan",
                 "Bahamas": "Bahamas", "Bangladesh": "Bangladesch", "Belarus": "Belarus", "Belgium": "Belgien", "Belize": "Belize", "Benin": "Benin", "Bhutan": "Bhutan", "Bolivia": "Bolivien", "Bosnia and Herz.": "Bosnien und Herzegowina", "Botswana": "Botsuana", "Brazil": "Brasilien", "Brunei": "Brunei", "Bulgaria": "Bulgarien", "Burkina Faso": "Burkina Faso", "Burundi": "Burundi",
@@ -478,55 +559,6 @@
                 "NFC-Chip": ["nfc chip", "nfc"],
                 "MEMS-Mikrofon": ["microphone", "mic"],
                 "Smartphone-Lautsprecher": ["speaker", "loudspeaker"]
-            };
-
-            const mineralNarratives = {
-                "Silizium": "Das wichtigste Halbleitermaterial der Welt. Aus hochreinem Quarzsand gewonnen, bildet es die Basisstruktur (Wafer) für nahezu jeden Mikrochip (CPU, Speicher, Sensoren).",
-                "Kupfer": "Ein hervorragender elektrischer Leiter. Wird massiv für die winzigen Leiterbahnen auf Platinen (PCB), in Chips und als wärmeableitender Block (Heatspreader) verwendet.",
-                "Gold": "Da Gold nicht oxidiert (rostet), wird es hauchdünn auf sensible elektrische Kontaktflächen und für winzige Verbindungsdrähte (Wire Bonding) aufgetragen.",
-                "Tantal": "Extrem hitzebeständig und zuverlässig. Wird für mikroskopisch kleine, aber hochkapazitive Kondensatoren auf der Platine und als Barriere-Schicht im Chip verwendet.",
-                "Wolfram": "Besitzt den höchsten Schmelzpunkt aller Metalle. Wird im Chip-Inneren für die mikroskopischen Kontaktstecker (Plugs) genutzt, die die Milliarden Transistoren verbinden.",
-                "Kobalt": "Ein entscheidendes Metall für die Zellchemie von Lithium-Ionen-Akkus. Es stabilisiert die Kathode und ermöglicht eine hohe Energiedichte bei kompakter Bauform.",
-                "Lithium": "Das leichteste aller Metalle. Lithium-Ionen wandern im Akku beim Laden und Entladen zwischen Anode und Kathode und speichern so die elektrische Energie.",
-                "Indium": "Wird als Indiumzinnoxid (ITO) verarbeitet. Es ist transparent und gleichzeitig elektrisch leitfähig – die unverzichtbare Basis für jedes Touchscreen- und OLED-Display.",
-                "Neodym": "Ein Seltenerdmetall, das für die stärksten Permanentmagnete der Welt benötigt wird. Unverzichtbar für die winzigen Lautsprecher, Mikrofone und den Vibrationsmotor.",
-                "Zinn": "Der Hauptbestandteil von Lötzinn. Es wird benötigt, um Mikrochips und andere Bauteile elektrisch und mechanisch dauerhaft mit der Hauptplatine (PCB) zu verbinden.",
-                "Silber": "Besitzt die höchste elektrische Leitfähigkeit aller Metalle. Wird in speziellen Lotlegierungen, leitfähigen Klebern und teils in der Antennentechnik verwendet.",
-                "Hafnium": "Ein hochspezialisiertes Übergangsmetall. Es dient als extrem dünne Isolationsschicht (High-k-Dielektrikum) in den winzigen Transistoren, um Leckströme zu verhindern.",
-                "Nickel": "Wird oft als schützende Unterbeschichtung (Sperrschicht) verwendet, bevor Kontakte vergoldet werden, und ist ein wichtiger Bestandteil der Akku-Kathode.",
-                "Graphit": "Eine Form von Kohlenstoff. Bildet in der Regel die Anode (den Minuspol) des Lithium-Ionen-Akkus, in deren Schichtstruktur sich die Lithium-Ionen einlagern.",
-                "Aluminium": "Sehr leicht und gut wärmeleitend. Findet Anwendung in Kameragehäusen, als Hitzeschild, in der Akku-Verpackung und teilweise für Leiterbahnen auf Platinen.",
-                "Bor": "Wird als sogenanntes 'Dotiergas' genutzt. Es wird in das reine Silizium 'eingeschossen', um die elektrischen Eigenschaften des Halbleiters gezielt zu verändern (p-Dotierung).",
-                "Phosphor": "Ebenfalls ein Dotiergas für die Chipherstellung (n-Dotierung), um gemeinsam mit Bor die Milliarden Transistoren überhaupt erst schaltbar zu machen.",
-                "Gallium": "Ein Hochfrequenz-Halbleiter. Wird in Kombination mit Arsen oder Stickstoff für 5G-Antennenverstärker, Laser und Näherungssensoren verwendet.",
-                "Germanium": "Ein wichtiges Halbleitermetall, das in 5G-Modems und optischen Sensoren beigemischt wird, um die Verarbeitungsgeschwindigkeit von Hochfrequenzsignalen zu erhöhen.",
-                "Epoxidharz": "Ein synthetisches Kunstharz. Zusammen mit Glasfaser bildet es das extrem stabile und feuerfeste Trägermaterial (FR4) der Hauptplatine.",
-                "Glasfaser": "Feinste gesponnene Glasfäden, die Platinen und Gehäuseteile mechanisch verstärken, ohne die lebenswichtigen Funkwellen zu stören.",
-                "Glas": "In Form von hochfestem Alumosilikatglas (z.B. Gorilla Glass) schützt es das Display und die Kameralinsen vor Kratzern und Brüchen.",
-                "Kunststoff": "Dient als Gehäusematerial, Isolator für Kabel und Stecker, und wird in speziellen Formen (wie Polycarbonat) in Kameralinsen genutzt.",
-                "Eisen": "In speziellen Legierungen oder als Ferrit für die Abschirmung von Magnetfeldern (z.B. beim Wireless Charging) und in winzigen Lautsprecherbauteilen eingesetzt.",
-                "Mangan": "Oft zusammen mit Nickel und Kobalt in der Akku-Kathode (NMC-Zellen) eingesetzt, um die Stabilität und Sicherheit der Batteriezelle zu erhöhen.",
-                "Edelstahl": "Wird wegen seiner extremen Härte und Korrosionsbeständigkeit für den äußeren Rahmen, Kamera-Einfassungen und die USB-C Ladebuchse genutzt.",
-                "Ferrit": "Ein keramischer Werkstoff aus Eisenoxid. Schirmt das Mainboard vor den elektromagnetischen Feldern der Induktionsspule (Wireless Charging) ab.",
-                "Zink": "Wird in der Batteriechemie, als Korrosionsschutz oder in speziellen Legierungen wie Messing (z.B. in Antennenkontakten) verwendet.",
-                "Lanthan": "Ein Seltenerdmetall, das hochwertigem optischen Glas (Kameralinsen) beigemischt wird, um die Lichtbrechung zu verbessern und Farbfehler zu reduzieren.",
-                "Niob": "Verbessert die optischen Eigenschaften von Glas und wird teils in mikroskopischen Kondensatoren eingesetzt.",
-                "Magnesiumfluorid": "Wird als Antireflex-Beschichtung auf die Kameralinsen aufgedampft, um Lichtreflexionen und Lens-Flares auf Fotos zu minimieren.",
-                "Polymere": "Hochspezialisierte Kunststoffe, die unter anderem für flexible Leiterplatten, Kamera-Aktuatoren und schwingungsdämpfende Membranen im Mikrofon genutzt werden.",
-                "Antimon": "Ein Halbmetall, das bei der Halbleiterfertigung teils zur Dotierung oder als Flammhemmer in den Kunststoffen der Platine verwendet wird.",
-                "Argon": "Ein Edelgas, das in der Chip-Fabrikation eine absolut reine, reaktionsfreie Atmosphäre in den Belichtungs- und Ätzkammern garantiert.",
-                "Arsen": "Toxisch, aber in kristalliner Verbindung mit Gallium (Galliumarsenid) ein extrem leistungsfähiger Halbleiter für Infrarot-Sensoren und 5G-Verstärker.",
-                "Zirkon": "Wird in Form von Zirkoniumdioxid in Keramikgehäusen, optischen Sensoren oder auch in winzigen Oszillatoren verarbeitet.",
-                "Titan": "Extrem leicht, hart und biokompatibel. Wird für Premium-Gehäuserahmen, Schrauben und im Chip-Packaging als Barriere-Schicht eingesetzt.",
-                "Polycarbonat": "Ein sehr bruchfester, transparenter Kunststoff. Wird oft für die feinen Linsen im Kameramodul oder für Gehäuserückseiten verwendet.",
-                "Quarzglas": "Eine hochreine Form von Glas, die extrem temperaturbeständig ist. Wird für die Wafer-Träger in den Hochöfen der Chipfertigung oder in Spezial-Sensoren genutzt.",
-                "PTFE": "Besser bekannt als Teflon. Ein Kunststoff mit extrem geringer Reibung, der in Smartphone-Tasten, Schaltern und als Hochfrequenz-Isolator für 5G-Antennen dient.",
-                "ABS": "Ein robuster Standard-Kunststoff, der sich gut spritzgießen lässt. Wird für innere Rahmen, Antennenträger und Steckergehäuse genutzt.",
-                "LCP": "Liquid Crystal Polymer. Ein Spezialkunststoff, der auf molekularer Ebene strukturierbar ist und wegen seiner perfekten Hochfrequenz-Eigenschaften als Träger für 5G-Antennen dient.",
-                "Messing": "Eine Legierung aus Kupfer und Zink. Wird für mechanisch belastbare Kontakte, Federn und Antennen-Pins innerhalb des Geräts genutzt.",
-                "PEEK": "Ein Hochleistungskunststoff, der enorm hitzebeständig und formstabil ist. Wird für die winzige, schwingende Membran im Smartphone-Lautsprecher verwendet.",
-                "Chrom": "Wird meist in Legierungen (wie Edelstahl) oder als hauchdünne, extrem harte Oberflächenbeschichtung für kratzfeste Rahmenbauteile eingesetzt.",
-                "Kohlenstoff": "Kommt im Smartphone vor allem in zwei Formen vor: Als Graphit im Akku oder in dünnen, schwarzen Karbonfolien, die die Abwärme des Prozessors flächig im Gehäuse verteilen."
             };
 
             const countryNarratives = {
@@ -751,103 +783,115 @@
                 speaker: { name: "Smartphone-Lautsprecher", category: "AUDIO", materials: ["Neodym", "Eisen", "Kupfer", "PEEK", "Glasfaser", "Edelstahl", "Chrom", "Messing", "Gold"], geography: { mining: ["China", "Chile", "Peru", "USA", "Deutschland", "Großbritannien", "Südafrika", "Brasilien"], manufacturing: ["China", "Vietnam", "Japan"] }, technicalSummary: "Elektromechanisches Modul (Neodym-Antrieb, PEEK-Membran)." }
             };
 
-            // HIER WAR DER FEHLER: allMaterials wird hier wieder global als Konstante gesetzt!
+            const mineralNarratives = {
+                "Silizium": "Das wichtigste Halbleitermaterial der Welt. Aus hochreinem Quarzsand gewonnen, bildet es die Basisstruktur (Wafer) für nahezu jeden Mikrochip (CPU, Speicher, Sensoren).",
+                "Kupfer": "Ein hervorragender elektrischer Leiter. Wird massiv für die winzigen Leiterbahnen auf Platinen (PCB), in Chips und als wärmeableitender Block (Heatspreader) verwendet.",
+                "Gold": "Da Gold nicht oxidiert (rostet), wird es hauchdünn auf sensible elektrische Kontaktflächen und für winzige Verbindungsdrähte (Wire Bonding) aufgetragen.",
+                "Tantal": "Extrem hitzebeständig und zuverlässig. Wird für mikroskopisch kleine, aber hochkapazitive Kondensatoren auf der Platine und als Barriere-Schicht im Chip verwendet.",
+                "Wolfram": "Besitzt den höchsten Schmelzpunkt aller Metalle. Wird im Chip-Inneren für die mikroskopischen Kontaktstecker (Plugs) genutzt, die die Milliarden Transistoren verbinden.",
+                "Kobalt": "Ein entscheidendes Metall für die Zellchemie von Lithium-Ionen-Akkus. Es stabilisiert die Kathode und ermöglicht eine hohe Energiedichte bei kompakter Bauform.",
+                "Lithium": "Das leichteste aller Metalle. Lithium-Ionen wandern im Akku beim Laden und Entladen zwischen Anode und Kathode und speichern so die elektrische Energie.",
+                "Indium": "Wird als Indiumzinnoxid (ITO) verarbeitet. Es ist transparent und gleichzeitig elektrisch leitfähig – die unverzichtbare Basis für jedes Touchscreen- und OLED-Display.",
+                "Neodym": "Ein Seltenerdmetall, das für die stärksten Permanentmagnete der Welt benötigt wird. Unverzichtbar für die winzigen Lautsprecher, Mikrofone und den Vibrationsmotor.",
+                "Zinn": "Der Hauptbestandteil von Lötzinn. Es wird benötigt, um Mikrochips und andere Bauteile elektrisch und mechanisch dauerhaft mit der Hauptplatine (PCB) zu verbinden.",
+                "Silber": "Besitzt die höchste elektrische Leitfähigkeit aller Metalle. Wird in speziellen Lotlegierungen, leitfähigen Klebern und teils in der Antennentechnik verwendet.",
+                "Hafnium": "Ein hochspezialisiertes Übergangsmetall. Es dient als extrem dünne Isolationsschicht (High-k-Dielektrikum) in den winzigen Transistoren, um Leckströme zu verhindern.",
+                "Nickel": "Wird oft als schützende Unterbeschichtung (Sperrschicht) verwendet, bevor Kontakte vergoldet werden, und ist ein wichtiger Bestandteil der Akku-Kathode.",
+                "Graphit": "Eine Form von Kohlenstoff. Bildet in der Regel die Anode (den Minuspol) des Lithium-Ionen-Akkus, in deren Schichtstruktur sich die Lithium-Ionen einlagern.",
+                "Aluminium": "Sehr leicht und gut wärmeleitend. Findet Anwendung in Kameragehäusen, als Hitzeschild, in der Akku-Verpackung und teilweise für Leiterbahnen auf Platinen.",
+                "Bor": "Wird als sogenanntes 'Dotiergas' genutzt. Es wird in das reine Silizium 'eingeschossen', um die elektrischen Eigenschaften des Halbleiters gezielt zu verändern (p-Dotierung).",
+                "Phosphor": "Ebenfalls ein Dotiergas für die Chipherstellung (n-Dotierung), um gemeinsam mit Bor die Milliarden Transistoren überhaupt erst schaltbar zu machen.",
+                "Gallium": "Ein Hochfrequenz-Halbleiter. Wird in Kombination mit Arsen oder Stickstoff für 5G-Antennenverstärker, Laser und Näherungssensoren verwendet.",
+                "Germanium": "Ein wichtiges Halbleitermetall, das in 5G-Modems und optischen Sensoren beigemischt wird, um die Verarbeitungsgeschwindigkeit von Hochfrequenzsignalen zu erhöhen.",
+                "Epoxidharz": "Ein synthetisches Kunstharz. Zusammen mit Glasfaser bildet es das extrem stabile und feuerfeste Trägermaterial (FR4) der Hauptplatine.",
+                "Glasfaser": "Feinste gesponnene Glasfäden, die Platinen und Gehäuseteile mechanisch verstärken, ohne die lebenswichtigen Funkwellen zu stören.",
+                "Glas": "In Form von hochfestem Alumosilikatglas (z.B. Gorilla Glass) schützt es das Display und die Kameralinsen vor Kratzern und Brüchen.",
+                "Kunststoff": "Dient als Gehäusematerial, Isolator für Kabel und Stecker, und wird in speziellen Formen (wie Polycarbonat) in Kameralinsen genutzt.",
+                "Eisen": "In speziellen Legierungen oder als Ferrit für die Abschirmung von Magnetfeldern (z.B. beim Wireless Charging) und in winzigen Lautsprecherbauteilen eingesetzt.",
+                "Mangan": "Oft zusammen mit Nickel und Kobalt in der Akku-Kathode (NMC-Zellen) eingesetzt, um die Stabilität und Sicherheit der Batteriezelle zu erhöhen.",
+                "Edelstahl": "Wird wegen seiner extremen Härte und Korrosionsbeständigkeit für den äußeren Rahmen, Kamera-Einfassungen und die USB-C Ladebuchse genutzt.",
+                "Ferrit": "Ein keramischer Werkstoff aus Eisenoxid. Schirmt das Mainboard vor den elektromagnetischen Feldern der Induktionsspule (Wireless Charging) ab.",
+                "Zink": "Wird in der Batteriechemie, als Korrosionsschutz oder in speziellen Legierungen wie Messing (z.B. in Antennenkontakten) verwendet.",
+                "Lanthan": "Ein Seltenerdmetall, das hochwertigem optischen Glas (Kameralinsen) beigemischt wird, um die Lichtbrechung zu verbessern und Farbfehler zu reduzieren.",
+                "Niob": "Verbessert die optischen Eigenschaften von Glas und wird teils in mikroskopischen Kondensatoren eingesetzt.",
+                "Magnesiumfluorid": "Wird als Antireflex-Beschichtung auf die Kameralinsen aufgedampft, um Lichtreflexionen und Lens-Flares auf Fotos zu minimieren.",
+                "Polymere": "Hochspezialisierte Kunststoffe, die unter anderem für flexible Leiterplatten, Kamera-Aktuatoren und schwingungsdämpfende Membranen im Mikrofon genutzt werden.",
+                "Antimon": "Ein Halbmetall, das bei der Halbleiterfertigung teils zur Dotierung oder als Flammhemmer in den Kunststoffen der Platine verwendet wird.",
+                "Argon": "Ein Edelgas, das in der Chip-Fabrikation eine absolut reine, reaktionsfreie Atmosphäre in den Belichtungs- und Ätzkammern garantiert.",
+                "Arsen": "Toxisch, aber in kristalliner Verbindung mit Gallium (Galliumarsenid) ein extrem leistungsfähiger Halbleiter für Infrarot-Sensoren und 5G-Verstärker.",
+                "Zirkon": "Wird in Form von Zirkoniumdioxid in Keramikgehäusen, optischen Sensoren oder auch in winzigen Oszillatoren verarbeitet.",
+                "Titan": "Extrem leicht, hart und biokompatibel. Wird für Premium-Gehäuserahmen, Schrauben und im Chip-Packaging als Barriere-Schicht eingesetzt.",
+                "Polycarbonat": "Ein sehr bruchfester, transparenter Kunststoff. Wird oft für die feinen Linsen im Kameramodul oder für Gehäuserückseiten verwendet.",
+                "Quarzglas": "Eine hochreine Form von Glas, die extrem temperaturbeständig ist. Wird für die Wafer-Träger in den Hochöfen der Chipfertigung oder in Spezial-Sensoren genutzt.",
+                "PTFE": "Besser bekannt als Teflon. Ein Kunststoff mit extrem geringer Reibung, der in Smartphone-Tasten, Schaltern und als Hochfrequenz-Isolator für 5G-Antennen dient.",
+                "ABS": "Ein robuster Standard-Kunststoff, der sich gut spritzgießen lässt. Wird für innere Rahmen, Antennenträger und Steckergehäuse genutzt.",
+                "LCP": "Liquid Crystal Polymer. Ein Spezialkunststoff, der auf molekularer Ebene strukturierbar ist und wegen seiner perfekten Hochfrequenz-Eigenschaften als Träger für 5G-Antennen dient.",
+                "Messing": "Eine Legierung aus Kupfer und Zink. Wird für mechanisch belastbare Kontakte, Federn und Antennen-Pins innerhalb des Geräts genutzt.",
+                "PEEK": "Ein Hochleistungskunststoff, der enorm hitzebeständig und formstabil ist. Wird für die winzige, schwingende Membran im Smartphone-Lautsprecher verwendet.",
+                "Chrom": "Wird meist in Legierungen (wie Edelstahl) oder als hauchdünne, extrem harte Oberflächenbeschichtung für kratzfeste Rahmenbauteile eingesetzt.",
+                "Kohlenstoff": "Kommt im Smartphone vor allem in zwei Formen vor: Als Graphit im Akku oder in dünnen, schwarzen Karbonfolien, die die Abwärme des Prozessors flächig im Gehäuse verteilen."
+            };
+
             const cpuValues = Object.values(cpuData);
             const allMaterials = Array.from(new Set(cpuValues.flatMap(data => data.materials))).sort();
             const allComponents = cpuValues.map(c => c.name);
-
-            // Für die schnelle Auto-Linking Suche
+            
             const termDict = {};
             allMaterials.forEach(m => termDict[m.toLowerCase()] = { orig: m, type: 'mineral' });
             allComponents.forEach(c => termDict[c.toLowerCase()] = { orig: c, type: 'component' });
             const termsRegex = new RegExp(`(${[...allComponents, ...allMaterials].sort((a, b) => b.length - a.length).map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
 
             function getCountryInfo(countryDe) {
-                let miningMinerals = new Set();
-                let manufacturingComps = [];
-                let allComps = [];
-
+                let miningMinerals = new Set(), manufacturingComps = [], allComps = [];
                 for (const comp of cpuValues) {
-                    if (comp.geography.mining.includes(countryDe)) {
-                        comp.materials.forEach(m => miningMinerals.add(m));
-                        if (!allComps.includes(comp)) allComps.push(comp);
-                    }
-                    if (comp.geography.manufacturing.includes(countryDe)) {
-                        manufacturingComps.push(comp);
-                        if (!allComps.includes(comp)) allComps.push(comp);
-                    }
+                    if (comp.geography.mining.includes(countryDe)) { comp.materials.forEach(m => miningMinerals.add(m)); if (!allComps.includes(comp)) allComps.push(comp); }
+                    if (comp.geography.manufacturing.includes(countryDe)) { manufacturingComps.push(comp); if (!allComps.includes(comp)) allComps.push(comp); }
                 }
                 return { mining: Array.from(miningMinerals), manufacturing: manufacturingComps, components: allComps };
             }
 
             function getMapDataForMaterial(materialName) {
                 const searchTerm = materialName.toLowerCase().trim();
-                const miningSet = new Set();
-                const manufacturingSet = new Set();
-
+                const miningSet = new Set(), mfgSet = new Set();
                 for (const comp of cpuValues) {
                     if (comp.materials.some(m => m.toLowerCase() === searchTerm)) {
                         comp.geography.mining.forEach(c => miningSet.add(c));
-                        comp.geography.manufacturing.forEach(c => manufacturingSet.add(c));
+                        comp.geography.manufacturing.forEach(c => mfgSet.add(c));
                     }
                 }
-                return { miningLocations: Array.from(miningSet), manufacturingLocations: Array.from(manufacturingSet) };
+                return { miningLocations: Array.from(miningSet), manufacturingLocations: Array.from(mfgSet) };
             }
 
-            function generateTags(list, type, emptyMessage = "-") {
-                if (!list || list.length === 0) return `<span style="color: #7f8c8d; font-style: italic;">${emptyMessage}</span>`;
-                return list.map(item => {
-                    const safeItem = item.replace(/'/g, "\\'");
-                    return `<span class="clickable-tag" onclick="window.handleTagClick('${type}', '${safeItem}')">${item}</span>`;
-                }).join(" ");
+            function generateTags(list, type, emptyMsg = "-") {
+                if (!list || list.length === 0) return `<span style="color: #7f8c8d; font-style: italic;">${emptyMsg}</span>`;
+                return list.map(item => `<span class="clickable-tag" onclick="window.handleTagClick('${type}', '${item.replace(/'/g, "\\'")}')">${item}</span>`).join(" ");
             }
 
             const mapContainer = document.getElementById('map-container');
             const width = mapContainer.clientWidth || 1000;
             const height = mapContainer.clientHeight || 600;
 
-            const svg = d3.select("#map-canvas")
-                .append("svg")
-                .attr("viewBox", `0 0 ${width} ${height}`)
-                .attr("preserveAspectRatio", "xMidYMid meet")
-                .on("click", function(event) {
-                    if (event.target.tagName.toLowerCase() === 'svg') {
-                        document.getElementById("country-search").value = "";
-                        window.clearMapAndUI();
-                    }
-                });
-
+            const svg = d3.select("#map-canvas").append("svg").attr("viewBox", `0 0 ${width} ${height}`).attr("preserveAspectRatio", "xMidYMid meet");
+            svg.on("click", (e) => { if (e.target.tagName.toLowerCase() === 'svg') { document.getElementById("country-search").value = ""; window.clearMapAndUI(); } });
+            
             const g = svg.append("g");
             const projection = d3.geoMercator().scale(width / 6.5).translate([width / 2, height / 1.5]);
             const path = d3.geoPath().projection(projection);
             const tooltip = d3.select("#tooltip");
-
-            const zoom = d3.zoom().scaleExtent([1, 8]).translateExtent([[-width * 0.1, -height * 0.1], [width * 1.1, height * 1.2]]) 
-                .on("zoom", (event) => { g.attr("transform", event.transform); });
-            svg.call(zoom);
+            
+            svg.call(d3.zoom().scaleExtent([1, 8]).translateExtent([[-width * 0.1, -height * 0.1], [width * 1.1, height * 1.2]]).on("zoom", e => g.attr("transform", e.transform)));
 
             window.clearMapAndUI = function() {
                 g.selectAll("path").classed("highlighted-country highlighted-mining highlighted-manufacturing highlighted-both", false);
-                document.getElementById("map-legend").style.display = "none";
-                document.getElementById("default-legend").style.display = "block";
-                document.getElementById("search-results").style.display = "none";
-                document.getElementById("country-details").style.display = "none";
-                document.getElementById("default-message").style.display = "block";
-            };
+                document.getElementById("map-legend").style.display = "none"; document.getElementById("default-legend").style.display = "block";
+                document.getElementById("search-results").style.display = "none"; document.getElementById("country-details").style.display = "none"; document.getElementById("default-message").style.display = "block";
+            }
 
             window.handleTagClick = function(type, value) {
-                window.clearMapAndUI(); 
-                document.getElementById("country-search").value = value;
-                
+                window.clearMapAndUI(); document.getElementById("country-search").value = value;
                 if (type === 'mineral') showMineralInfo(value);
-                else if (type === 'country') {
-                    let enName = Object.keys(countryTranslations).find(key => countryTranslations[key] === value);
-                    if (!enName) enName = value;
-                    showCountryInfo(enName);
-                } else if (type === 'component') {
-                    const comp = cpuValues.find(c => c.name === value);
-                    if (comp) showComponentInfo(comp);
-                }
+                else if (type === 'country') showCountryInfo(Object.keys(countryTranslations).find(k => countryTranslations[k] === value) || value);
+                else if (type === 'component') showComponentInfo(cpuValues.find(c => c.name === value));
             };
 
             function autoLinkText(text) {
@@ -858,35 +902,28 @@
                 });
             }
 
-            function highlightRoles(miningArray, manufacturingArray) {
-                g.selectAll("path").each(function(d) {
-                    const countryEn = d.properties.name;
-                    const countryDe = countryTranslations[countryEn] || countryEn;
-                    const isMining = miningArray.includes(countryDe);
-                    const isManufacturing = manufacturingArray.includes(countryDe);
-                    
-                    if (isMining && isManufacturing) d3.select(this).classed("highlighted-both", true).raise();
-                    else if (isMining) d3.select(this).classed("highlighted-mining", true).raise();
-                    else if (isManufacturing) d3.select(this).classed("highlighted-manufacturing", true).raise();
-                });
-                
-                document.getElementById("default-legend").style.display = "none";
-                document.getElementById("map-legend").style.display = "block";
+            function highlightRoles(miningArray, mfgArray) {
+                const minSet = new Set(miningArray), mfgSet = new Set(mfgArray);
+                g.selectAll("path").attr("class", d => d.baseClass)
+                    .filter(d => minSet.has(d.properties.deName) || mfgSet.has(d.properties.deName))
+                    .classed("highlighted-both", d => minSet.has(d.properties.deName) && mfgSet.has(d.properties.deName))
+                    .classed("highlighted-mining", d => minSet.has(d.properties.deName) && !mfgSet.has(d.properties.deName))
+                    .classed("highlighted-manufacturing", d => !minSet.has(d.properties.deName) && mfgSet.has(d.properties.deName)).raise();
+                document.getElementById("default-legend").style.display = "none"; document.getElementById("map-legend").style.display = "block";
             }
 
             function renderDetails(title, sections) {
-                document.getElementById("default-message").style.display = "none";
-                document.getElementById("search-results").style.display = "none";
+                document.getElementById("default-message").style.display = "none"; 
+                document.getElementById("search-results").style.display = "none"; 
                 const container = document.getElementById("country-details");
                 container.style.display = "block";
                 
                 const isBookmarked = window.userData && window.userData.bookmarks && window.userData.bookmarks.includes(title);
                 const starHtml = window.currentUser ? `<span id="btn-star" class="bookmark-btn" onclick="window.toggleBookmark('${title}')" style="float:right;" title="Zu meiner Sammlung hinzufügen">${isBookmarked ? '⭐' : '☆'}</span>` : '';
-
+                
                 let html = `<h2 style="color: #e74c3c; margin-bottom: 5px;">${title} ${starHtml}</h2>`;
                 sections.forEach(sec => {
-                    const headerColor = sec.color || "#2980b9";
-                    html += `<h3 style="color: ${headerColor}; border-bottom: 2px solid #eee; padding-bottom: 5px; font-size: 1.1em; margin-top: 20px;">${sec.title}</h3>`;
+                    html += `<h3 style="color: ${sec.color || "#2980b9"}; border-bottom: 2px solid #eee; padding-bottom: 5px; font-size: 1.1em; margin-top: 20px;">${sec.title}</h3>`;
                     html += `<p style="line-height: 1.5; color: #34495e; margin-top: 5px;">${sec.content}</p>`;
                 });
 
@@ -907,7 +944,6 @@
                         <em>Melde dich an, um eigene Notizen und Lesezeichen zu diesem Eintrag zu speichern.</em>
                     </div>`;
                 }
-
                 container.innerHTML = html;
             }
 
@@ -915,10 +951,7 @@
                 const countryDe = countryTranslations[countryEn] || countryEn;
                 const info = getCountryInfo(countryDe);
                 const narrative = countryNarratives[countryEn] || countryNarratives[countryDe];
-
-                document.getElementById("map-legend").style.display = "none";
-                document.getElementById("default-legend").style.display = "none";
-                
+                document.getElementById("map-legend").style.display = "none"; document.getElementById("default-legend").style.display = "none";
                 g.selectAll("path").filter(p => p.properties.name === countryEn).classed("highlighted-country", true).raise();
 
                 let sections = [];
@@ -931,10 +964,10 @@
                 }
 
                 if (narrative) {
-                    sections.push({ title: "Zusammenfassung Abbau", content: autoLinkText(narrative.abbau) });
-                    sections.push({ title: "Zusammenfassung Verarbeitung", content: autoLinkText(narrative.verarbeitung) });
-                    sections.push({ title: "Verwendung im Gerät", content: autoLinkText(narrative.verwendung) });
-                    sections.push({ title: "Arbeitsbedingungen & Ethik", content: narrative.arbeitsbedingungen, color: "#e67e22" });
+                    if (narrative.abbau && narrative.abbau !== "-") sections.push({ title: "Zusammenfassung Abbau", content: autoLinkText(narrative.abbau) });
+                    if (narrative.verarbeitung && narrative.verarbeitung !== "-") sections.push({ title: "Zusammenfassung Verarbeitung", content: autoLinkText(narrative.verarbeitung) });
+                    if (narrative.verwendung && narrative.verwendung !== "-") sections.push({ title: "Verwendung im Gerät", content: autoLinkText(narrative.verwendung) });
+                    if (narrative.arbeitsbedingungen) sections.push({ title: "Arbeitsbedingungen & Ethik", content: autoLinkText(narrative.arbeitsbedingungen), color: "#e67e22" });
                 } else if (info.components.length > 0) {
                     sections.push({ title: "Arbeitsbedingungen & Ethik", content: "Keine spezifischen Daten zu den Arbeitsbedingungen in diesem Land verfügbar.", color: "#e67e22" });
                 }
@@ -943,158 +976,78 @@
 
             function showComponentInfo(comp) {
                 highlightRoles(comp.geography.mining, comp.geography.manufacturing);
-                
                 let transportDesc = "";
                 const highValueAir = ["Smartphone-CPU", "Smartphone-GPU", "Smartphone-SoC", "Smartphone-NPU", "LPDDR-RAM", "NAND-Flash-Speicher", "Kameramodul (Sensor-Einheit)", "5G-Modem", "OLED-Display-Panel", "MEMS-Gyroskop", "MEMS-Beschleunigungssensor", "Annäherungssensor (IR)", "Umgebungslichtsensor (ALS)", "NFC-Chip"];
-                const hazmatSea = ["Lithium-Ionen-Akku"]; 
-                
-                if (hazmatSea.includes(comp.name)) {
+                if (["Lithium-Ionen-Akku"].includes(comp.name)) {
                     transportDesc = "<b>Seefracht (Gefahrgut):</b> Akkus unterliegen strengen IATA-Flugverboten. Sie müssen interkontinental fast ausschließlich sicher in Spezial-Containern verschifft werden.<br><br><b>Gefahrgut-LKW:</b> Wird für den Transport über verbundene Landmassen genutzt.";
                 } else if (highValueAir.includes(comp.name)) {
                     transportDesc = "<b>Luftfracht:</b> Dieses Bauteil ist extrem wertvoll, sensibel und leicht. Um in den kurzen Produktzyklen mithalten zu können, wird es weltweit geflogen.<br><br><b>Sicherheits-LKW:</b> Übernimmt die kontinentale Feinverteilung von den Flughäfen zu den Fabriken.";
                 } else {
                     transportDesc = "<b>Container-Seefracht:</b> Wird für Ozean-Routen genutzt, da das Bauteil schwerer oder in Massen benötigt wird.<br><br><b>LKW / Güterzug:</b> Übernimmt den Massentransport auf zusammenhängenden Landmassen.";
                 }
-
                 renderDetails(`Bauteil: ${comp.name}`, [
                     { title: "System-Kategorie", content: comp.category },
-                    { title: "Verwendete Rohstoffe", content: generateTags(comp.materials, 'mineral', 'Keine Rohstoffe erfasst.') },
-                    { title: "Abbau-Länder (Mining)", content: generateTags(comp.geography.mining, 'country', 'Keine Länder erfasst.') },
-                    { title: "Verarbeitungs-Länder (Manufacturing)", content: generateTags(comp.geography.manufacturing, 'country', 'Keine Länder erfasst.') },
-                    { title: "Technische Details", content: autoLinkText(comp.technicalSummary) },
-                    { title: "Logistik & Transportweg", content: transportDesc, color: "#27ae60" } 
+                    { title: "Verwendete Rohstoffe", content: generateTags(comp.materials, 'mineral') },
+                    { title: "Abbau-Länder", content: generateTags(comp.geography.mining, 'country') },
+                    { title: "Verarbeitungs-Länder", content: generateTags(comp.geography.manufacturing, 'country') },
+                    { title: "Details", content: autoLinkText(comp.technicalSummary) },
+                    { title: "Logistik & Transportweg", content: transportDesc, color: "#27ae60" }
                 ]);
             }
 
             function showMineralInfo(mineral) {
                 const mapData = getMapDataForMaterial(mineral);
                 highlightRoles(mapData.miningLocations, mapData.manufacturingLocations);
-                
-                const usedInComps = cpuValues.filter(c => c.materials.includes(mineral)).map(c => c.name);
                 const mineralTransportDesc = "<b>Massengut-Frachter (Bulk):</b> Rohe Mineralien und Erze sind extrem schwer und haben einen geringen Kilo-Wert. Sie werden fast ausschließlich über die Weltmeere verschifft.<br><br><b>Güterzug / LKW (Schwerlast):</b> Übernimmt den Transport von den Minen zu den Häfen und Schmelzanlagen.";
-                
                 const mineralDesc = mineralNarratives[mineral] || "Keine spezifische Beschreibung für diesen Rohstoff hinterlegt.";
 
                 renderDetails(`Rohstoff: ${mineral}`, [
                     { title: "Eigenschaften & Verwendung", content: autoLinkText(mineralDesc) },
-                    { title: "Verwendet in Smartphone-Bauteilen", content: generateTags(usedInComps, 'component', 'Keine Bauteile erfasst.') },
-                    { title: "Abbau-Länder", content: generateTags(mapData.miningLocations, 'country', 'Keine spezifischen Länder erfasst (globaler Markt).') },
-                    { title: "Veredelungs- & Verarbeitungs-Länder", content: generateTags(mapData.manufacturingLocations, 'country', 'Keine Länder erfasst.') },
+                    { title: "Verwendet in Smartphone-Bauteilen", content: generateTags(cpuValues.filter(c => c.materials.includes(mineral)).map(c => c.name), 'component') },
+                    { title: "Abbau-Länder", content: generateTags(Array.from(mapData.miningLocations), 'country') },
+                    { title: "Veredelungs- & Verarbeitungs-Länder", content: generateTags(Array.from(mapData.manufacturingLocations), 'country') },
                     { title: "Logistik & Transportweg", content: mineralTransportDesc, color: "#27ae60" }
                 ]);
             }
 
-            // Echte Weltkarte ONLINE abrufen
-            d3.json("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson").then(function(data) {
+            d3.json("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson").then(data => {
                 document.getElementById("loading").style.display = "none";
+                g.selectAll("path").data(data.features).enter().append("path").attr("d", path).each(function(d) {
+                    const deName = countryTranslations[d.properties.name] || d.properties.name; d.properties.deName = deName;
+                    const hasNar = !!(countryNarratives[d.properties.name] || countryNarratives[deName]);
+                    d.baseClass = "country " + (hasNar ? "role-major" : (getCountryInfo(deName).components.length > 0 ? "role-minor" : "role-none"));
+                }).attr("class", d => d.baseClass)
+                .on("mouseover", function(e, d) {
+                    d3.select("#tooltip").style("opacity", 1).html(d.properties.deName).style("left", (e.pageX + 15) + "px").style("top", (e.pageY - 20) + "px");
+                    if (!this.classList.contains("highlighted-both") && !this.classList.contains("highlighted-mining") && !this.classList.contains("highlighted-manufacturing") && !this.classList.contains("highlighted-country")) d3.select(this).raise();
+                }).on("mouseout", () => d3.select("#tooltip").style("opacity", 0))
+                .on("click", (e, d) => { window.clearMapAndUI(); document.getElementById("country-search").value = d.properties.deName; showCountryInfo(d.properties.name); });
 
-                g.selectAll("path").data(data.features).enter().append("path").attr("d", path)
-                    .attr("class", function(d) {
-                        const countryEn = d.properties.name;
-                        const countryDe = countryTranslations[countryEn] || countryEn;
-                        
-                        const hasNarrative = !!(countryNarratives[countryEn] || countryNarratives[countryDe]);
-                        const compInfo = getCountryInfo(countryDe);
-                        const hasComponent = compInfo.components.length > 0;
-                        
-                        let baseClass = "country ";
-                        if (hasNarrative) return baseClass + "role-major";
-                        else if (hasComponent) return baseClass + "role-minor";
-                        else return baseClass + "role-none";
-                    })
-                    .on("mouseover", function(event, d) {
-                        const countryDe = countryTranslations[d.properties.name] || d.properties.name;
-                        tooltip.style("opacity", 1).html(countryDe);
-                        if (!d3.select(this).attr("class").includes("highlighted")) d3.select(this).raise(); 
-                    })
-                    .on("mousemove", function(event) { tooltip.style("left", (event.pageX + 15) + "px").style("top", (event.pageY - 20) + "px"); })
-                    .on("mouseout", function() { tooltip.style("opacity", 0); })
-                    .on("click", function(event, d) {
-                        window.clearMapAndUI();
-                        const countryEn = d.properties.name;
-                        document.getElementById("country-search").value = countryTranslations[countryEn] || countryEn;
-                        showCountryInfo(countryEn);
-                    });
-
-                document.getElementById("country-search").addEventListener("input", function(e) {
-                    const term = e.target.value.toLowerCase().trim();
-                    const resultsContainer = document.getElementById("search-results");
+                document.getElementById("country-search").addEventListener("input", e => {
+                    const term = e.target.value.toLowerCase().trim(); window.clearMapAndUI();
+                    if (!term) return;
+                    document.getElementById("search-results").style.display = "block"; document.getElementById("default-message").style.display = "none"; document.getElementById("default-legend").style.display = "none";
+                    document.getElementById("search-results").innerHTML = "<h3>Suchergebnisse:</h3>";
                     
-                    window.clearMapAndUI();
-
-                    if (term === "") { return; }
-
-                    resultsContainer.style.display = "block";
-                    document.getElementById("default-message").style.display = "none";
-                    document.getElementById("country-details").style.display = "none";
-                    document.getElementById("default-legend").style.display = "none";
-                    resultsContainer.innerHTML = "<h3>Suchergebnisse:</h3>";
-
-                    function calcScore(searchTerm, textStr) {
-                        if (!textStr) return 0;
-                        textStr = String(textStr).toLowerCase();
-                        if (textStr === searchTerm) return 100;
-                        if (textStr.startsWith(searchTerm)) return 50;
-                        if (textStr.includes(searchTerm)) return 10;
-                        return 0;
-                    }
-
-                    const searchResults = [];
-                    cpuValues.forEach(c => {
-                        let score = Math.max(0, calcScore(term, c.name));
-                        if (c.category.toLowerCase().includes(term)) score = Math.max(score, 5);
-                        (componentTranslations[c.name] || []).forEach(t => { const s = calcScore(term, t); if (s > 0) score = Math.max(score, s - 1); });
-                        if (score > 0) searchResults.push({ text: c.name, typeLabel: "Bauteil", typeClass: "result-bauteil", score: score, onClickFn: () => showComponentInfo(c) });
-                    });
-
-                    // HIER greift die reparierte allMaterials Variable!
-                    allMaterials.forEach(m => {
-                        let score = Math.max(0, calcScore(term, m));
-                        (materialTranslations[m] || []).forEach(t => { const s = calcScore(term, t); if (s > 0) score = Math.max(score, s - 1); });
-                        if (score > 0) searchResults.push({ text: m, typeLabel: "Rohstoff", typeClass: "result-rohstoff", score: score, onClickFn: () => showMineralInfo(m) });
-                    });
-
-                    g.selectAll("path").each(function(d) {
-                        const en = d.properties.name;
-                        const de = countryTranslations[en] || en;
-                        let score = Math.max(0, calcScore(term, de));
-                        const enScore = calcScore(term, en);
-                        if (enScore > 0) score = Math.max(score, enScore - 1);
-                        if (score > 0) searchResults.push({ text: de, typeLabel: "Land", typeClass: "result-land", score: score, onClickFn: () => showCountryInfo(en) });
-                    });
-
-                    if (searchResults.length === 0) {
-                        resultsContainer.innerHTML += "<p style='color: #7f8c8d; font-style: italic;'>Keine Treffer gefunden.</p>";
-                        return;
-                    }
-
-                    const uniqueResults = [];
-                    const seen = new Set();
-                    searchResults.forEach(r => {
-                        const id = r.typeLabel + ":" + r.text;
-                        if (!seen.has(id)) { seen.add(id); uniqueResults.push(r); }
-                    });
-
-                    uniqueResults.sort((a, b) => b.score !== a.score ? b.score - a.score : a.text.localeCompare(b.text));
+                    const res = [];
+                    const calcScore = (s, t) => t && String(t).toLowerCase() === s ? 100 : (t && String(t).toLowerCase().startsWith(s) ? 50 : (t && String(t).toLowerCase().includes(s) ? 10 : 0));
                     
-                    const fragment = document.createDocumentFragment();
-                    uniqueResults.forEach(item => {
-                        const div = document.createElement("div");
-                        div.className = `search-result-item ${item.typeClass}`;
-                        div.innerHTML = `<div class="search-type-label">${item.typeLabel}</div>${item.text}`;
-                        div.onclick = () => { 
-                            window.clearMapAndUI();
-                            document.getElementById("country-search").value = item.text; 
-                            item.onClickFn(); 
-                        };
-                        fragment.appendChild(div);
+                    cpuValues.forEach(c => { let sc = calcScore(term, c.name); if(sc>0) res.push({text: c.name, typeLabel: "Bauteil", typeClass: "result-bauteil", score: sc, fn: ()=>showComponentInfo(c)}); });
+                    allMaterials.forEach(m => { let sc = calcScore(term, m); if(sc>0) res.push({text: m, typeLabel: "Rohstoff", typeClass: "result-rohstoff", score: sc, fn: ()=>showMineralInfo(m)}); });
+                    data.features.forEach(d => { let sc = Math.max(calcScore(term, d.properties.deName), calcScore(term, d.properties.name)); if(sc>0) res.push({text: d.properties.deName, typeLabel: "Land", typeClass: "result-land", score: sc, fn: ()=>showCountryInfo(d.properties.name)}); });
+
+                    if (res.length === 0) return document.getElementById("search-results").innerHTML += "<p style='color: #7f8c8d; font-style: italic;'>Keine Treffer.</p>";
+                    
+                    const frag = document.createDocumentFragment(), seen = new Set();
+                    res.sort((a, b) => b.score - a.score).forEach(r => {
+                        if (!seen.has(r.text)) {
+                            seen.add(r.text); const div = document.createElement("div"); div.className = `search-result-item ${r.typeClass}`;
+                            div.innerHTML = `<div class="search-type-label">${r.typeLabel}</div>${r.text}`;
+                            div.onclick = () => { window.clearMapAndUI(); document.getElementById("country-search").value = r.text; r.fn(); }; frag.appendChild(div);
+                        }
                     });
-                    resultsContainer.appendChild(fragment);
+                    document.getElementById("search-results").appendChild(frag);
                 });
-
-            }).catch(function(error) {
-                document.getElementById("loading").innerText = "Fehler: Keine Internetverbindung oder Datenquelle nicht erreichbar.";
-                document.getElementById("loading").style.color = "red";
             });
 
             window.addEventListener('resize', () => {
